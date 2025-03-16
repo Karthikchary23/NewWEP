@@ -60,4 +60,5 @@ const serviceProviderSchema = new mongoose.Schema({
   
 });
 
-module.exports = mongoose.model('ServiceProvider', serviceProviderSchema);
+const ServiceProvider = mongoose.model('ServiceProvider', serviceProviderSchema);
+module.exports = ServiceProvider; // Use module.exports instead of export default;

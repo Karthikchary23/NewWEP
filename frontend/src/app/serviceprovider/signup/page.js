@@ -78,7 +78,7 @@ export default function ServiceProviderSignup() {
       alert("Signup successful!");
       router.push("/serviceprovider/signin");
     } catch (error) {
-      setSignupError("please refresh the page and try again");
+      setSignupError("Enter valid otp");
       setIsLoading(false);
     } 
   };

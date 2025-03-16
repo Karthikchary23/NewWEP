@@ -1,5 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { handleOtpRequest } = require('../controllers/OtpController');
+const { handleOtpRequest } = require('../Controllers/OtpController');
 router.post('/send-otp', handleOtpRequest);
 module.exports = router;

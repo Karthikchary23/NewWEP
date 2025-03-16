@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 const CustomerSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -34,8 +34,6 @@ const CustomerSchema = new mongoose.Schema({
         default: false
     }, resetPasswordOTP:{
         type: Number
-    }, accountVerificationOTP:{
-        type: Number
     }, customerVerificationOTP:{
         type: Number
     }, ratings:{
@@ -47,4 +45,4 @@ const CustomerSchema = new mongoose.Schema({
     },
 })
 const Customer = mongoose.model('Customer', CustomerSchema);
-export default Customer;
+module.exports = Customer; // Use module.exports instead of export default Customer;

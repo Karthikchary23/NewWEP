@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const ServiceproviderRoutes = require('./routes/ServiceproviderRoutes');
 const OtpRoutes = require('./routes/OtpRoutes');
+const CustomerRoutes = require('./routes/CustomerRoutes');
 dotenv.config();
 
 app.use(cors());
@@ -24,6 +25,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 app.use('/service-provider', ServiceproviderRoutes);
 app.use('/otp',OtpRoutes);
+app.use('/customer',CustomerRoutes);
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });

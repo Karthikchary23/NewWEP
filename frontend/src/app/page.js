@@ -11,12 +11,12 @@ const Page = () => {
         <div className="flex gap-4">
           <Link href="/serviceprovider/signin" className="flex-1">
             <button className="w-full py-3 border-2 border-blue-400 text-white rounded-lg font-medium transition duration-300 hover:bg-blue-400 hover:text-gray-900 cursor-pointer">
-              Customer
+            Employee
             </button>
           </Link>
-          <Link href="/serviceprovider/signup" className="flex-1">
+          <Link href="/customer/signin" className="flex-1">
             <button className="w-full py-3 border-2 border-blue-400 text-white rounded-lg font-medium transition duration-300 hover:bg-blue-400 hover:text-gray-900 cursor-pointer">
-              Employee
+            Customer
             </button>
           </Link>
         </div>
