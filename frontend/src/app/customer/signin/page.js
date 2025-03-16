@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 export default function SignIn() {
   const router = useRouter();
@@ -23,21 +25,18 @@ export default function SignIn() {
     setIsLoading(true);
     setError(null);
     try {
-      // API call to send OTP
-      const response = await fetch("/api/signin/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email, password: data.password }),
+      const response = await axios.post("http://localhost:4000/customersigninotp/customerdashboardsigninotpsend-otp", {
+        email: data.email,
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to send OTP. Check your credentials.");
       }
 
-      setOtpSent(true);
+      setOtpSent(response.data.otp);
       alert("OTP sent to your email!");
     } catch (err) {
-      setError(err.message);
+      setError(err.response.data.message);
     } finally {
       setIsLoading(false);
     }
@@ -47,28 +46,19 @@ export default function SignIn() {
     setIsLoading(true);
     setError(null);
     try {
-      // API call to verify OTP
-      const response = await fetch("/api/signin/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: data.email, 
-          password: data.password, 
-          otp: data.otp 
-        }),
-      });
+      if(data.otp !== otpSent) {
+        throw new Error("Invalid OTP. Please try again.");
 
-      if (!response.ok) {
-        throw new Error("Invalid OTP");
-      }
+    }
 
       setOtpVerified(true);
       alert("OTP verified successfully!");
     } catch (err) {
-      setError(err.message);
+      setError(err.response.data.message);
     } finally {
       setIsLoading(false);
     }
+    
   };
 
   const onSubmit = async (data) => {
@@ -80,25 +70,25 @@ export default function SignIn() {
     setError(null);
     try {
       // Final sign-in API call
-      const response = await fetch("/api/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: data.email, 
-          password: data.password,
-          otp: data.otp 
-        }),
-      });
+      const response = await axios.post("http://localhost:4000/customer/signin", {
+        email: data.email,
+        password: data.password,
+       
+          
+        });
+     
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Sign in failed");
       }
+      console.log(response.data.token);
+      Cookies.set("token11", response.data.token, { expires: 7 }); // Expires in 7 days
 
-      const result = await response.json();
+
       alert("Signed in successfully!");
-      router.push("/dashboard");
+      router.push("/customer/customerdashboard");
     } catch (err) {
-      setError(err.message);
+      setError(err.response.data.message);
     } finally {
       setIsLoading(false);
     }

@@ -26,6 +26,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/service-provider', ServiceproviderRoutes);
 app.use('/otp',OtpRoutes);
 app.use('/customer',CustomerRoutes);
+app.use('/serviceprovidersigninotp',OtpRoutes)
+app.use("/serviceprovider", ServiceproviderRoutes);
+app.use("/customersigninotp", CustomerRoutes);
+app.use("/customer", CustomerRoutes);
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
