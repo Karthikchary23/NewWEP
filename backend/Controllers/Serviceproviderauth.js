@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 const ServiceProvider = require('../models/Serviceprovider'); // Add this line
 
@@ -28,7 +27,7 @@ exports.Servicesignup = async (req, res) => {
     });
     console.log(newServiceProvider);
     await newServiceProvider.save();
-    res.status(201).json({ message: "Service provider registered successfully" }); // Add this line
+    res.status(200).json({ message: "Service provider registered successfully" }); // Add this line
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }

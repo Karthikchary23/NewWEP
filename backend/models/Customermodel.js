@@ -27,8 +27,24 @@ const CustomerSchema = new mongoose.Schema({
     }, isCustomer:{
         type: Boolean,
         required: true,
+        default: true
+    }, isServiceProvider:{
+        type: Boolean,
+        required: true,
         default: false
-    }
+    }, resetPasswordOTP:{
+        type: Number
+    }, accountVerificationOTP:{
+        type: Number
+    }, customerVerificationOTP:{
+        type: Number
+    }, ratings:{
+        type: Number,
+        default: 0
+    }, serviceProvidedCount:{
+        type: Number,
+        default: 0
+    },
 })
 const Customer = mongoose.model('Customer', CustomerSchema);
 export default Customer;

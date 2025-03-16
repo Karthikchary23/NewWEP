@@ -38,10 +38,7 @@ const serviceProviderSchema = new mongoose.Schema({
   accountVerificationOTP: {
     type: Number
   },
-  accountVerified: {
-    type: Boolean,
-    default: false
-  },
+  
   resetPasswordOTP: {
     type: Number
   },
@@ -52,18 +49,15 @@ const serviceProviderSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  profileImage: {
-    type: String,
-    required: true
+  isCustomer: {
+    type: Boolean,
+    default: false
   },
-  serviceprovider:{
+  isServiceprovider:{
     type: Boolean,
     default: true
   },
-  serviceprovider:{
-    type: Boolean,
-    default: true
-  }
+  
 });
 
 module.exports = mongoose.model('ServiceProvider', serviceProviderSchema);

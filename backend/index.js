@@ -4,7 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const ServiceproviderRoutes = require('./routes/ServiceproviderRoutes');
-const ServiceProvider = require('./models/Serviceprovider'); // Add this line
+const OtpRoutes = require('./routes/OtpRoutes');
 dotenv.config();
 
 app.use(cors());
@@ -22,8 +22,8 @@ mongoose.connect(process.env.MONGODB_URI, {
   console.log('Connected to MongoDB');
 }).catch((err) => { console.log(err); });
 
-app.use('/', ServiceproviderRoutes);
-
+app.use('/service-provider', ServiceproviderRoutes);
+app.use('/otp',OtpRoutes);
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
