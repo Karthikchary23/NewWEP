@@ -14,10 +14,10 @@ exports.CustomerTokenverifcation = async (req, res) => {
         console.log(decoded);
         const customerfound = await customer.findOne({ email: decoded.email });
         if (!customerfound) {
-        return res.status(400).json({ message: 'Customer not found' });
+            return res.status(400).json({ message: 'Customer not found' });
         }
         res.status(200).json({ message: 'Token verified' });
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
     }
-    }
+}

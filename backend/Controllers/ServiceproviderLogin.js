@@ -15,7 +15,7 @@ exports.ServiceproviderSignin = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid password' });
     }
-    console.log("password matched");
+    // console.log("password matched");
     const token = jwt.sign({ id: serviceProvider._id,email:serviceProvider.email,password:serviceProvider.password }, process.env.JWT_SECRET);
     // console.log(token);
     res.status(200).json({ token });

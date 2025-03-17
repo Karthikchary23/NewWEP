@@ -82,7 +82,7 @@ export default function SignIn() {
         throw new Error("Sign in failed");
       }
       console.log(response.data.token);
-      Cookies.set("token11", response.data.token, { expires: 7 }); // Expires in 7 days
+      Cookies.set("ct", response.data.token, { expires: 7 }); 
 
 
       alert("Signed in successfully!");
