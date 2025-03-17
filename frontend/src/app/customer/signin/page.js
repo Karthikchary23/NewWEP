@@ -86,7 +86,7 @@ export default function SignIn() {
 
 
       alert("Signed in successfully!");
-      router.push("/customer/customerdashboard");
+      router.push("/customerdashboard");
     } catch (err) {
       setError(err.response.data.message);
     } finally {

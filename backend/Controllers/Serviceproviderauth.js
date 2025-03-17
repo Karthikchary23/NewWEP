@@ -6,7 +6,7 @@ const ServiceProvider = require('../models/Serviceprovider'); // Add this line
 
 exports.Servicesignup = async (req, res) => {
   const { firstName, lastName, email, mobile, address, localArea, serviceType, password, profileImage } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   try {
     const serviceProvider = await ServiceProvider.findOne({ email });
     if (serviceProvider) {
@@ -25,7 +25,7 @@ exports.Servicesignup = async (req, res) => {
       password: hashedPassword,
       profileImage
     });
-    console.log(newServiceProvider);
+    // console.log(newServiceProvider);
     await newServiceProvider.save();
     res.status(200).json({ message: "Service provider registered successfully" }); // Add this line
   } catch (error) {

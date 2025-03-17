@@ -7,7 +7,7 @@ exports.ServiceproviderSignin = async (req, res) => {
   console.log(req.body);
   try {
     const serviceProvider = await ServiceProvider.findOne({ email });
-    console.log(serviceProvider);
+    // console.log(serviceProvider);
     if (!serviceProvider) {
       return res.status(400).json({ message: 'Email not found' });
     }
@@ -17,7 +17,7 @@ exports.ServiceproviderSignin = async (req, res) => {
     }
     console.log("password matched");
     const token = jwt.sign({ id: serviceProvider._id,email:serviceProvider.email,password:serviceProvider.password }, process.env.JWT_SECRET);
-    console.log(token);
+    // console.log(token);
     res.status(200).json({ token });
     } catch (error) {
     res.status(500).json({ message: 'Something went wrong' });

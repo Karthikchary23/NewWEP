@@ -30,6 +30,8 @@ app.use('/serviceprovidersigninotp',OtpRoutes)
 app.use("/serviceprovider", ServiceproviderRoutes);
 app.use("/customersigninotp", CustomerRoutes);
 app.use("/customer", CustomerRoutes);
+app.use("/serviceprovidertoken", ServiceproviderRoutes);
+app.use("/customertoken", CustomerRoutes);
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
