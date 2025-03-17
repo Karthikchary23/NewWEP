@@ -8,6 +8,7 @@ const CustomerDashboard = () => {
     const router = useRouter();
 
     useEffect(() => {
+        Cookies.remove('spt')
         const ct = Cookies.get("ct");
 
         if (!ct) {

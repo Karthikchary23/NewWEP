@@ -82,6 +82,13 @@ export default function SignIn() {
         throw new Error("Sign in failed");
       }
       console.log(response.data.token);
+      const ct=Cookies.get('ct')
+      if (ct)
+      {
+        Cookies.remove('ct')
+
+      }
+      
       Cookies.set("spt", response.data.token, { expires: 7 }); 
 
 

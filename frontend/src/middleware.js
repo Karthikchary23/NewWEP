@@ -1,31 +1,30 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export function middleware(req) {
-    // Get cookies from the request
-    const spt = req.cookies.get('spt');
-    const ct =req.cookies.get('ct')
+    const spt = req.cookies.get("spt");
+    const ct = req.cookies.get("ct");
 
-    // Protected routes
     const { pathname } = req.nextUrl;
-    // If token is missing and the user is trying to access a protected route, redirect to "/"
-    if (!spt && !ct && pathname!=='/') {
-        return NextResponse.redirect(new URL('/', req.url));
-    }
-    else if (spt && pathname !== '/serviceproviderdashboard') {
-        return NextResponse.redirect(new URL('/serviceproviderdashboard', req.url));
+
+    // 🔹 If neither token exists & user tries to access a protected route, redirect to "/"
+    if (!spt && !ct && (pathname === "/serviceproviderdashboard" || pathname === "/customerdashboard")) {
+        return NextResponse.redirect(new URL("/", req.url));
     }
 
-    else if (ct && pathname !== '/customerdashboard') {
-        return NextResponse.redirect(new URL('/customerdashboard', req.url));
-    }
-    if (spt && pathname == '/') {
-        return NextResponse.redirect(new URL('/serviceproviderdashboard', req.url));
+    // 🔹 If service provider token exists, ensure they are on the right page
+    if (spt && pathname !== "/serviceproviderdashboard") {
+        return NextResponse.redirect(new URL("/serviceproviderdashboard", req.url));
     }
 
-    return NextResponse.next(); // Allow access if token exists
+    // 🔹 If customer token exists, ensure they are on the right page
+    if (ct && pathname !== "/customerdashboard") {
+        return NextResponse.redirect(new URL("/customerdashboard", req.url));
+    }
+
+    return NextResponse.next(); // Allow access if everything is fine
 }
 
-// Apply middleware only to protected routes
+// Apply middleware to protected routes
 export const config = {
-    matcher: ['/serviceproviderdashboard', '/customerdashboard'],
+    matcher: ["/","/serviceproviderdashboard", "/customerdashboard", "/"],
 };

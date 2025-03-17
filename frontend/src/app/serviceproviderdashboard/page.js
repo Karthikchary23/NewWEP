@@ -8,6 +8,7 @@ const ServiceProviderDashboard = () => {
     const router = useRouter();
 
     useEffect(() => {
+        
         const spt = Cookies.get("spt");
 
         if (!spt) {
