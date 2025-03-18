@@ -26,5 +26,5 @@ export function middleware(req) {
 
 // Apply middleware to protected routes
 export const config = {
-    matcher: ["/","/serviceproviderdashboard", "/customerdashboard", "/"],
+    matcher: ["/","/serviceproviderdashboard", "/customerdashboard", "/customer/signin","/serviceprovider/signin"],
 };

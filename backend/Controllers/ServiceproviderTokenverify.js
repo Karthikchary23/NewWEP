@@ -18,7 +18,7 @@ exports.ServiceproviderTokenverifcation = async (req, res) => {
         if (!serviceprovider) {
             return res.status(400).json({ message: 'Serviceprovider not found' });
         }
-        res.status(200).json({ message: 'Token verified',firstName:serviceprovider.firstName });
+        res.status(200).json({ message: 'Token verified',firstName:serviceprovider.firstName,serviceprovider });
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
     }

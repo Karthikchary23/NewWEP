@@ -53,6 +53,8 @@ export default function ServiceProviderSignup() {
     try {
       setIsLoading(true);
       setSignupError(null);
+      console.log(otp)
+      console.log(data.verificationotp)
 
       if (data.verificationotp !== otp) {
         throw new Error("Invalid OTP");
@@ -70,13 +72,14 @@ export default function ServiceProviderSignup() {
       };
 
       const response = await axios.post("http://localhost:4000/service-provider/service-providersignup", signupData);
+      console.log(response.status)
+      console.log(response.data.message)
 
-      if (response.status !== 200) {
-        throw new Error("Signup failed");
-      }
+      if (response.status === 200) {
+        alert("Signup successful!");
+        router.push("/serviceprovider/signin");      }
 
-      alert("Signup successful!");
-      router.push("/serviceprovider/signin");
+      
     } catch (error) {
       setSignupError("Enter valid otp");
       setIsLoading(false);
