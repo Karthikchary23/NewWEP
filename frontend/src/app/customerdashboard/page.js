@@ -8,27 +8,34 @@ const CustomerDashboard = () => {
     const router = useRouter();
 
     useEffect(() => {
-        Cookies.remove('spt')
+        Cookies.remove("spt");  // Ensure 'spt' is necessary
         const ct = Cookies.get("ct");
-
+    
         if (!ct) {
             router.push("/");
             return;
         }
-
-        // Verify token via API
-        axios.post("http://localhost:4000/customertoken/customertokenverify", {
-            token: ct,
-        })
-        .then(response => {
-            if (response.status !== 200) {
-                console.log(response.status);
+    
+        const verifyToken = async () => {
+            try {
+                const response = await axios.post("http://localhost:4000/customertoken/customertokenverify", {
+                    token: ct,
+                });
+    
+                if (response.status === 200) {
+                    console.log(response.status);
+                    alert("hello");
+                }
+            } catch (err) {
+                console.error("Token verification error:", err);
+                
+                // Remove the token and redirect for any error
+                Cookies.remove("ct");  // Corrected cookie removal
                 router.push("/");
             }
-        })
-        .catch(() => {
-            router.push("/");
-        });
+        };
+    
+        verifyToken();
     }, []);
 
     // ✅ Logout function to remove ct token

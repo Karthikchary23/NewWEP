@@ -6,7 +6,6 @@ const router = express.Router();
 
 router.post('/service-providersignup', Servicesignup);
 router.post('/signin', ServiceproviderSignin);
-router.get('/serviceprovidertokenverify', ServiceproviderTokenverifcation);
-
+router.post('/serviceprovidertokenverify', ServiceproviderTokenverifcation);
 
 module.exports = router;

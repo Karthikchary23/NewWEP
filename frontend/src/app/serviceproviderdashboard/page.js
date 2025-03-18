@@ -8,8 +8,8 @@ const ServiceProviderDashboard = () => {
     const router = useRouter();
 
     useEffect(() => {
-        
         const spt = Cookies.get("spt");
+        console.log(spt);
 
         if (!spt) {
             router.push("/");
@@ -17,25 +17,30 @@ const ServiceProviderDashboard = () => {
         }
 
         // Verify token via API
-        axios.get("http://localhost:4000/serviceprovidertoken/serviceprovidertokenverify", {
-            headers: {
-                Authorization: `Bearer ${spt}`,
-            },
-        })
-        .then(response => {
-            if (response.status !== 200) {
-                console.log(response.status);
+        const verifyToken = async () => {
+            try {
+                const response = await axios.post("http://localhost:4000/serviceprovidertoken/serviceprovidertokenverify", {
+                    token: spt
+                });
+
+                if (response.status === 200) {
+                    console.log(response.status);
+                    alert("hello");
+                }
+            } catch (err) {
+                console.error("Token verification error:", err);
+
+                // Remove the token and redirect for any error
+                Cookies.remove("spt");
                 router.push("/");
             }
-        })
-        .catch(() => {
-            router.push("/");
-        });
+        };
+
+        verifyToken();
     }, []);
 
-    // ✅ Logout function to remove spt token
     const handleLogout = () => {
-        alert("You have been logged out!"); // Debugging
+        alert("You have been logged out!");
         console.log("Logging out...");
 
         Cookies.remove("spt", { path: "/" });
