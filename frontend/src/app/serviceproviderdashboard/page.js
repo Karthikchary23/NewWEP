@@ -25,7 +25,7 @@ const ServiceProviderDashboard = () => {
 
                 if (response.status === 200) {
                     console.log(response.status);
-                    alert("hello");
+                    alert(`Welcone ,${response.data.firstName}`);
                 }
             } catch (err) {
                 console.error("Token verification error:", err);

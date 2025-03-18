@@ -56,10 +56,9 @@ async function handleOtpRequest(req, res) {
 
         console.log("User does not exist, sending OTP...");
 
-        // Generate OTP
         const otp = generateOtp();
 
-        // Send OTP via email
+       
         try {
             await sendOtpEmail(email, otp);
         } catch (error) {
