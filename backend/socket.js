@@ -20,6 +20,7 @@ exports.init = (server) => {
 
         socket.on("acceptRequest", (data) => {
             console.log(data)
+            
             console.log(`Request accepted: ${data.requestId} by ${data.providerEmail}`);
             
         });

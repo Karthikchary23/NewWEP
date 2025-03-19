@@ -56,10 +56,12 @@ const ServiceProviderDashboard = () => {
                 navigator.geolocation.watchPosition(
                     (position) => {
                         const { latitude, longitude } = position.coords;
+                        console.log(latitude,longitude)
                         setLocation({ lat: latitude, lng: longitude });
 
                         // Send updated location to the backend
-                        updateLocation(latitude, longitude);
+                        // updateLocation(latitude, longitude);
+                        // alert(location)
                     },
                     (error) => {
                         alert("Error getting location");
@@ -70,9 +72,12 @@ const ServiceProviderDashboard = () => {
             } else {
                 console.log("Geolocation is not supported by this browser.");
             }
+            
         }
+        
 
         async function updateLocation(latitude, longitude) {
+            alert(latitude,longitude)
             if (!email1) return;
             try {
                 await axios.post("http://localhost:4000/serviceproviderlocation/update-location", {
@@ -103,10 +108,15 @@ const ServiceProviderDashboard = () => {
         };
     }, []);
 
-    // 🔵 Handle Accept Request
     const handleAccept = (requestId) => {
-        alert(requestId)
-        socket.emit("acceptRequest", { requestId, providerEmail: email1 });
+        axios.post("http://localhost:4000/available/isavailable", { email: email1 })
+            .then(response => {
+                console.log(response.data.message);
+                socket.emit("acceptRequest", { requestId, providerEmail: email1 });
+            })
+            .catch(err => {
+                console.log(err);
+            });
     };
 
     // 🔴 Handle Reject Request
@@ -170,3 +180,4 @@ const ServiceProviderDashboard = () => {
 };
 
 export default ServiceProviderDashboard;
+
