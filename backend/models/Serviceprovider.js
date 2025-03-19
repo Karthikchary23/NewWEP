@@ -66,7 +66,11 @@ const serviceProviderSchema = new mongoose.Schema({
           default: [0, 0],  // ✅ Set default coordinates
           required: true 
       }
-  }
+  },
+  isAvailable: { // ✅ New field to track availability
+    type: Boolean,
+    default: true // Providers are available by default
+}
 });
 
 // ✅ Enable geospatial indexing

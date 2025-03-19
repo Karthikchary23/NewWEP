@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
+import Map from "@/Components/Maps";
 
 const CustomerDashboard = () => {
     const [location, setLocation] = useState({ lat: null, lng: null });
@@ -11,7 +12,7 @@ const CustomerDashboard = () => {
     const router = useRouter();
 
     useEffect(() => {
-        // Remove "spt" token
+        // Remove "spt" token (if any)
         Cookies.remove("spt");
         const ct = Cookies.get("ct");
 
@@ -41,7 +42,8 @@ const CustomerDashboard = () => {
         };
 
         verifyToken();
-    }, []); 
+    }, []);
+
     useEffect(() => {
         function getCurrentLocation() {
             if (navigator.geolocation) {
@@ -71,47 +73,102 @@ const CustomerDashboard = () => {
             if (!email1) return; // Ensure email is available before sending
 
             try {
-                axios.post("http://localhost:4000/customerlocation/update-location", {
-                    latitude, longitude, email: email1 }).then(response=>
-                    {
-                        console.log(response.data)
-                        console.log("Location updated successfully!");
+                await axios.post("http://localhost:4000/customerlocation/update-location", {
+                    latitude, longitude, email: email1
+                });
 
-
-                    }).catch(error => {
-                        console.error('There was an error logging in', error);
-                        alert('Invalid email or password');
-                      });
-               
+                console.log("Location updated successfully!");
             } catch (error) {
                 console.error("Error updating location:", error);
             }
         }
 
         getCurrentLocation();
-    }, [email1]); 
+    }, [email1]);
+
+    // ✅ Send Service Request
+    const handleRequestService = async (serviceType) => {
+        if (!location.lat || !location.lng) {
+            alert("Location not available. Please allow location access.");
+            return;
+        }
+
+        try {
+            const response = await axios.post("http://localhost:4000/request/request-service", {
+                name,
+                email: email1,
+                latitude: location.lat,
+                longitude: location.lng,
+                serviceType, 
+            });
+
+            if (response.status === 200) {
+                alert(`Request for ${serviceType} sent successfully!`);
+            }
+        } catch (error) {
+            console.error("Error sending request:", error);
+            alert("Failed to send service request.");
+        }
+    };
 
     // ✅ Logout function
     const handleLogout = () => {
         alert("You have been logged out!");
-
         Cookies.remove("ct"); // Remove customer token
-
         setTimeout(() => {
             router.push("/");
         }, 500); // Ensure logout is processed before redirect
     };
 
     return (
-        <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4 mt-4">
-            <div>Welcome to Customer Dashboard, {name}</div>
+        <div className="flex flex-col items-center w-full px-4 mt-4">
+            {/* ✅ Navbar (Same as Before) */}
+            <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
+                <div>Welcome to Customer Dashboard, {name}</div>
 
-            <button
-                onClick={handleLogout}
-                className="bg-red-500 px-3 py-1 rounded hover:bg-red-700 transition cursor-pointer"
-            >
-                Logout
-            </button>
+                <button
+                    onClick={handleLogout}
+                    className="bg-red-500 px-3 py-1 rounded hover:bg-red-700 transition cursor-pointer"
+                >
+                    Logout
+                </button>
+            </div>
+            <Map/>
+
+            {/* ✅ Service Options */}
+            <div className="grid grid-cols-2 gap-6 mt-8 w-full max-w-lg">
+                {/* Electrician */}
+                <div 
+                    onClick={() => handleRequestService("Electrician")} 
+                    className="bg-blue-500 text-white text-xl font-semibold p-6 rounded-lg text-center cursor-pointer hover:bg-blue-700 transition"
+                >
+                    ⚡ Electrician
+                </div>
+
+                {/* Plumber */}
+                <div 
+                    onClick={() => handleRequestService("Plumber")} 
+                    className="bg-green-500 text-white text-xl font-semibold p-6 rounded-lg text-center cursor-pointer hover:bg-green-700 transition"
+                >
+                    🔧 Plumber
+                </div>
+
+                {/* Cook */}
+                <div 
+                    onClick={() => handleRequestService("Cook")} 
+                    className="bg-orange-500 text-white text-xl font-semibold p-6 rounded-lg text-center cursor-pointer hover:bg-orange-700 transition"
+                >
+                    🍳 Cook
+                </div>
+
+                {/* Water Service */}
+                <div 
+                    onClick={() => handleRequestService("Water Service")} 
+                    className="bg-teal-500 text-white text-xl font-semibold p-6 rounded-lg text-center cursor-pointer hover:bg-teal-700 transition"
+                >
+                    💧 Water Service
+                </div>
+            </div>
         </div>
     );
 };

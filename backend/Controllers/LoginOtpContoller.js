@@ -62,10 +62,12 @@ async function ServiceprovideSignInOtpRequest(req, res) {
         } catch (error) {
             return res.status(500).json({ message: 'Error sending OTP', error: error.message });
         }
+        console.log("sending")
 
         res.status(200).json({ message: 'OTP sent successfully', otp });
     } catch (error) {
         console.error("Database error:", error);
+        console.error(error)
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 }

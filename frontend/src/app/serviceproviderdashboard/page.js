@@ -1,20 +1,22 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { io } from "socket.io-client"; // Import socket.io client
+
+const socket = io("http://localhost:4000", { transports: ["websocket"] });
 
 const ServiceProviderDashboard = () => {
     const router = useRouter();
-    const [email1,setemail1]=useState("")
-    const [name,setname]=useState("")
+    const [email1, setEmail1] = useState("");
+    const [name, setName] = useState("");
     const [location, setLocation] = useState({ lat: null, lng: null });
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const spt = Cookies.get("spt");
-        console.log(spt);
-
         if (!spt) {
             router.push("/");
             return;
@@ -23,40 +25,40 @@ const ServiceProviderDashboard = () => {
         // Verify token via API
         const verifyToken = async () => {
             try {
-                const response = await axios.post("http://localhost:4000/serviceprovidertoken/serviceprovidertokenverify", {
-                    token: spt
-                });
+                const response = await axios.post(
+                    "http://localhost:4000/serviceprovidertoken/serviceprovidertokenverify",
+                    { token: spt }
+                );
 
                 if (response.status === 200) {
-                    console.log(response);
-                    setemail1(response.data.serviceprovider.email)
-                    
-                    setname(response.data.firstName)
-                    alert(`Welcome ,${response.data.firstName}`);
+                    setEmail1(response.data.serviceprovider.email);
+                    setName(response.data.serviceprovider.firstName || "Provider");
+                    alert(`Welcome, ${response.data.serviceprovider.firstName || "Provider"}`);
+
+                    // Join the service provider to the socket room
+                    socket.emit("joinServiceProvider", response.data.serviceprovider.email);
                 }
             } catch (err) {
                 console.error("Token verification error:", err);
-
-                // Remove the token and redirect for any error
                 Cookies.remove("spt");
                 router.push("/");
+            } finally {
+                setLoading(false);
             }
         };
 
         verifyToken();
     }, []);
+
     useEffect(() => {
         function getCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(
                     (position) => {
                         const { latitude, longitude } = position.coords;
-                        console.log("User Location:", latitude, longitude);
-
-                        // Update state
                         setLocation({ lat: latitude, lng: longitude });
 
-                        // Send location to the backend
+                        // Send updated location to the backend
                         updateLocation(latitude, longitude);
                     },
                     (error) => {
@@ -71,51 +73,97 @@ const ServiceProviderDashboard = () => {
         }
 
         async function updateLocation(latitude, longitude) {
-            if (!email1) return; // Ensure email is available before sending
-
+            if (!email1) return;
             try {
-                axios.post("http://localhost:4000/serviceproviderlocation/update-location", {
-                    latitude, longitude, email: email1 }).then(response=>
-                    {
-                        console.log(response.data)
-                        console.log("Location updated successfully!");
-
-
-                    }).catch(error => {
-                        console.error('There was an error logging in', error);
-                        alert('Invalid email or password');
-                      });
-               
+                await axios.post("http://localhost:4000/serviceproviderlocation/update-location", {
+                    latitude,
+                    longitude,
+                    email: email1,
+                });
+                console.log("Location updated successfully!");
             } catch (error) {
                 console.error("Error updating location:", error);
             }
         }
 
         getCurrentLocation();
-    }, [email1]); 
+    }, [email1]);
+
+    useEffect(() => {
+        socket.on("newServiceRequest", (requestData) => {
+            console.log("New request received:", requestData);
+            setRequests((prevRequests) => [...prevRequests, requestData]);
+        });
+
+        socket.on("connect", () => console.log("Socket connected"));
+        socket.on("disconnect", () => console.log("Socket disconnected"));
+
+        return () => {
+            socket.off("newServiceRequest");
+        };
+    }, []);
+
+    // 🔵 Handle Accept Request
+    const handleAccept = (requestId) => {
+        socket.emit("acceptRequest", { requestId, providerEmail: email1 });
+    };
+
+    // 🔴 Handle Reject Request
+    const handleReject = (requestId) => {
+        socket.emit("rejectRequest", { requestId, providerEmail: email1 });
+    };
 
     const handleLogout = () => {
         alert("You have been logged out!");
-        console.log("Logging out...");
-
         Cookies.remove("spt", { path: "/" });
-
-        setTimeout(() => {
-            router.push("/");
-        }, 500); // Delay to ensure cookies are cleared before redirection
+        setTimeout(() => router.push("/"), 500);
     };
 
     return (
-        <div className="text-2xl text-white">
-            
-            {`Welcome to Service Provider Dashboard, ${name}`}
-            <br />
-            <button 
-                onClick={handleLogout} 
-                className="bg-red-500 px-4 py-2 mt-4 rounded hover:bg-red-700 transition"
-            >
-                Logout
-            </button>
+        <div className="text-2xl text-white p-6">
+            {loading ? (
+                <p>Loading dashboard...</p>
+            ) : (
+                <>
+                    <h1 className="text-3xl font-bold">Welcome, {name}</h1>
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 px-4 py-2 mt-4 rounded hover:bg-red-700 transition"
+                    >
+                        Logout
+                    </button>
+
+                    {/* Display Incoming Service Requests */}
+                    <div className="mt-6">
+                        <h2 className="text-xl font-bold">Incoming Requests</h2>
+                        {requests.length > 0 ? (
+                            requests.map((req, index) => (
+                                <div key={index} className="border p-4 mt-2 bg-gray-800 rounded-md">
+                                    <p><strong>Customer ID:</strong> {req.customerId}</p>
+                                    <p><strong>Service Type:</strong> {req.serviceType}</p>
+                                    <p><strong>Location:</strong> {req.customerLocation.join(", ")}</p>
+                                    <div className="mt-2">
+                                        <button
+                                            onClick={() => handleAccept(req._id)}
+                                            className="bg-green-500 px-3 py-1 rounded text-white mx-2"
+                                        >
+                                            Accept
+                                        </button>
+                                        <button
+                                            onClick={() => handleReject(req._id)}
+                                            className="bg-red-500 px-3 py-1 rounded text-white"
+                                        >
+                                            Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No new requests</p>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

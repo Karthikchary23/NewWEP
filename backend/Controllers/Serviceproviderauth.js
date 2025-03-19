@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
-const ServiceProvider = require('../models/Serviceprovider'); // Import the model
+const ServiceProvider = require('../models/Serviceprovider');
 
 exports.Servicesignup = async (req, res) => {
   const { firstName, lastName, email, mobile, address, localArea, serviceType, password, profileImage } = req.body;
