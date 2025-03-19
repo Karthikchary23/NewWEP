@@ -27,23 +27,28 @@ export default function Map() {
         } else {
             console.log("Geolocation is not supported by this browser.");
         }
+        
     }, []);
 
     const center = location.latitude && location.longitude
         ? [location.latitude, location.longitude]
-        : [17.3850, 78.4867]; // Default Hyderabad
+        : [17.3850, 78.4867]; 
+    console.log(center)
+    
 
     return (
-        <MapContainer center={center} zoom={15} style={{ height: "400px", width: "100%" }}>
-            {/* OpenStreetMap Tiles (Free) */}
+        <>
+       
+        <MapContainer center={center} zoom={14} style={{ height: "400px", width: "100%" }}>
+            
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-            {/* Marker for User Location */}
             {location.latitude && location.longitude && (
                 <Marker position={[location.latitude, location.longitude]}>
                     <Popup>Your Current Location</Popup>
                 </Marker>
             )}
         </MapContainer>
+        </>
     );
 }

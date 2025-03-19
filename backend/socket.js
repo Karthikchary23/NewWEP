@@ -19,13 +19,14 @@ exports.init = (server) => {
         });
 
         socket.on("acceptRequest", (data) => {
+            console.log(data)
             console.log(`Request accepted: ${data.requestId} by ${data.providerEmail}`);
-            // Handle request acceptance logic here
+            
         });
 
         socket.on("rejectRequest", (data) => {
-            console.log(`Request rejected: ${data.requestId} by ${data.providerEmail}`);
-            // Handle request rejection logic here
+            console.log(`Request rejected: ${data.customerId} by ${data.providerEmail}`);
+            
         });
 
         socket.on("disconnect", () => {

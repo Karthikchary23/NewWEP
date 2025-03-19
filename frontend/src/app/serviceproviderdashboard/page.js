@@ -105,6 +105,7 @@ const ServiceProviderDashboard = () => {
 
     // 🔵 Handle Accept Request
     const handleAccept = (requestId) => {
+        alert(requestId)
         socket.emit("acceptRequest", { requestId, providerEmail: email1 });
     };
 
@@ -144,7 +145,7 @@ const ServiceProviderDashboard = () => {
                                     <p><strong>Location:</strong> {req.customerLocation.join(", ")}</p>
                                     <div className="mt-2">
                                         <button
-                                            onClick={() => handleAccept(req._id)}
+                                            onClick={() => handleAccept(req.customerId)}
                                             className="bg-green-500 px-3 py-1 rounded text-white mx-2"
                                         >
                                             Accept

@@ -50,44 +50,46 @@ exports.createRequest = async (req, res) => {
     }
 };
 
-// Handle provider accepting request
-exports.acceptRequest = async (req, res) => {
-    try {
-        const { providerId, customerId } = req.body;
+// // Handle provider accepting request
+// exports.acceptRequest = async (req, res) => {
+//     try {
+//         const { providerId, customerId } = req.body;
+//         console.log(req.body)
 
-        const provider = await ServiceProvider.findById(providerId);
-        if (!provider || !provider.isAvailable) {
-            return res.status(400).json({ message: "Provider not available" });
-        }
+//         const provider = await ServiceProvider.findById(providerId);
+//         if (!provider || !provider.isAvailable) {
+//             return res.status(400).json({ message: "Provider not available" });
+//         }
 
-        // Create request and assign provider
-        const newRequest = new Request({
-            customerId,
-            serviceType: provider.serviceType,
-            providerId,
-            status: "Assigned",
-            customerLocation: provider.currentLocation,
-        });
+//         // Create request and assign provider
+//         const newRequest = new Request({
+//             customerId,
+//             serviceType: provider.serviceType,
+//             providerId,
+//             status: "Assigned",
+//             customerLocation: provider.currentLocation,
+//         });
 
-        await newRequest.save();
+//         await newRequest.save();
 
-        // Mark provider as unavailable
-        provider.isAvailable = false;
-        await provider.save();
+//         // Mark provider as unavailable
+//         provider.isAvailable = false;
+//         await provider.save();
 
-        // Notify other providers that request is taken
-        io.getIO().emit("requestTaken", { customerId });
+//         // Notify other providers that request is taken
+//         io.getIO().emit("requestTaken", { customerId });
 
-        res.status(200).json({ message: "Request assigned", request: newRequest });
+//         res.status(200).json({ message: "Request assigned", request: newRequest });
 
-    } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ error: error.message });
-    }
-};
+//     } catch (error) {
+//         console.error("Error:", error);
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 exports.requestService = async (req, res) => {
     const { name, email, latitude, longitude, serviceType } = req.body;
+    console.log("kkk",req.body)
 
     // Create a new service request (you can save it to the database if needed)
     const request = {
@@ -95,9 +97,8 @@ exports.requestService = async (req, res) => {
         serviceType,
         customerLocation: [latitude, longitude]
     };
-
-    // Emit the new service request to all connected service providers
     const io = getIo();
+    console.log(request)
     io.emit("newServiceRequest", request);
 
     res.status(200).json({ message: "Service request sent successfully" });
