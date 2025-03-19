@@ -60,7 +60,7 @@ const ServiceProviderDashboard = () => {
                         setLocation({ lat: latitude, lng: longitude });
 
                         // Send updated location to the backend
-                        // updateLocation(latitude, longitude);
+                        updateLocation(latitude, longitude);
                         // alert(location)
                     },
                     (error) => {
@@ -77,7 +77,7 @@ const ServiceProviderDashboard = () => {
         
 
         async function updateLocation(latitude, longitude) {
-            alert(latitude,longitude)
+          
             if (!email1) return;
             try {
                 await axios.post("http://localhost:4000/serviceproviderlocation/update-location", {
@@ -180,4 +180,3 @@ const ServiceProviderDashboard = () => {
 };
 
 export default ServiceProviderDashboard;
-
