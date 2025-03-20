@@ -93,6 +93,7 @@ exports.requestService = async (req, res) => {
 
     // Create a new service request (you can save it to the database if needed)
     const request = {
+        customername:name,
         customerId: email,
         serviceType,
         customerLocation: [latitude, longitude]

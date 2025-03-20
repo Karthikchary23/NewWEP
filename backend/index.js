@@ -40,6 +40,7 @@ app.use("/serviceprovidertoken", ServiceproviderRoutes);
 app.use("/request",RequestRouter)
 app.use("/available",ServiceproviderRoutes)
 app.use("/serviceproviderlocation",ServiceproviderRoutes)
+app.use("/customerlocation",CustomerRoutes)
 
 
 server.listen(process.env.PORT, () => {

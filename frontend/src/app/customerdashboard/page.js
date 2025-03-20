@@ -33,6 +33,7 @@ const CustomerDashboard = () => {
                     setName(response.data.name);
                     setEmail1(response.data.email);
                     alert(`Welcome, ${response.data.name}`);
+                    // alert(response.data.email)
                 }
             } catch (err) {
                 console.error("Token verification error:", err);
@@ -55,8 +56,7 @@ const CustomerDashboard = () => {
                         // Update state
                         setLocation({ lat: latitude, lng: longitude });
 
-                        // Send location to the backend
-                        updateLocation(latitude, longitude);
+                        updateLocation(latitude, longitude,email1);
                     },
                     (error) => {
                         alert("Error getting location");
@@ -69,21 +69,25 @@ const CustomerDashboard = () => {
             }
         }
 
-        async function updateLocation(latitude, longitude) {
-            if (!email1) return; // Ensure email is available before sending
+        async function updateLocation(latitude, longitude,email1) {
+            if (!email1) return  ; 
+            
 
             try {
                 await axios.post("http://localhost:4000/customerlocation/update-location", {
                     latitude, longitude, email: email1
                 });
+                // alert("location success")
 
                 console.log("Location updated successfully!");
             } catch (error) {
+                alert("not success")
                 console.error("Error updating location:", error);
             }
         }
 
         getCurrentLocation();
+        // alert("email not found",email1)
     }, [email1]);
 
     // ✅ Send Service Request

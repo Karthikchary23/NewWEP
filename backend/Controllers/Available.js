@@ -17,8 +17,10 @@ exports.UpdateAvailablestatus = async (req, res) => {
         }
 
         // Toggle the isAvailable status
+       
+        
         serviceprovider.isAvailable = !serviceprovider.isAvailable;
-
+        
         await serviceprovider.save();
 
         res.status(200).json({ message: 'Availability status updated successfully', isAvailable: serviceprovider.isAvailable });
