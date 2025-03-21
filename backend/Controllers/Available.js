@@ -16,10 +16,9 @@ exports.UpdateAvailablestatus = async (req, res) => {
             return res.status(404).json({ message: 'Service provider not found' });
         }
 
-        // Toggle the isAvailable status
        
         
-        serviceprovider.isAvailable = !serviceprovider.isAvailable;
+        serviceprovider.isAvailable = "true";
         
         await serviceprovider.save();
 

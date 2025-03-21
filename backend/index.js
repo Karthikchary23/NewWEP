@@ -9,6 +9,7 @@ const CustomerRoutes = require('./routes/CustomerRoutes');
 const RequestRouter = require('./routes/RequestRouter');
 const socketConfig = require("./socket"); // Import socket configuration
 const http = require("http"); // ✅ Add this line
+const requests=require("../backend/models/Requests")
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use("/request",RequestRouter)
 app.use("/available",ServiceproviderRoutes)
 app.use("/serviceproviderlocation",ServiceproviderRoutes)
 app.use("/customerlocation",CustomerRoutes)
+// app.use('/request',RequestRouter)
 
 
 server.listen(process.env.PORT, () => {

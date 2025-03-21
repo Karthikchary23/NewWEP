@@ -1,31 +1,25 @@
 const mongoose = require("mongoose");
 
 const requestSchema = new mongoose.Schema({
-    customeremail: { type: String, required: true },
-    serviceType: { type: String, required: true },
-    provideremail: { type: String, required: true },
+    customername: { type: String, required: true }, 
+    customermail: { type: String, required: true }, 
+    servicetype: { type: String, required: true }, 
+
+    serviceprovidername: { type: String, required: true }, 
+    serviceprovideremail: { type: String, required: true },
+
+    customerLocation: {  
+        lat: { type: Number, required: true },
+        lng: { type: Number, required: true },
+    },
+
+    serviceproviderlocation: {  
+        lat: { type: Number, required: true },
+        lng: { type: Number, required: true },
+    },
+
     status: { type: String, enum: ["Pending", "Assigned", "Completed"], default: "Pending" },
-
-    customerLocation: {  // ✅ Customer's real-time location
-        type: { type: String, enum: ["Point"], default: "Point" },
-        coordinates: { 
-            type: [Number], 
-            default: [0, 0],  // ✅ Default coordinates
-            required: true 
-        }
-    },
-
-    providerLocation: {  // ✅ Service provider's real-time location
-        type: { type: String, enum: ["Point"], default: "Point" },
-        coordinates: { 
-            type: [Number], 
-            default: [0, 0],  // ✅ Default coordinates
-            required: true 
-        }
-    },
-
-    customerAddress: { type: String, required: true },
-    providerAddress: { type: String, required: false },
+    
     createdAt: { type: Date, default: Date.now },
 });
 
