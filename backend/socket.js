@@ -20,6 +20,16 @@ function init(server) {
             // console.log("Registered providers:", serviceProviders);
         });
 
+        socket.on("registerCustomer", (customerEmail) => {
+            socket.join(customerEmail);
+            console.log(`Customer ${customerEmail} joined their room`);
+          });
+          
+        socket.on("serviceAccepted", (data) => {
+            console.log("Service Accepted:", data);
+            io.to(data.customerEmail).emit("notification", data); 
+          });
+
         // Remove provider when they disconnect
         socket.on("disconnect", () => {
             console.log("Provider disconnected:", socket.id);

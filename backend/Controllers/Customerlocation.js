@@ -4,7 +4,7 @@ const Customer = require('../models/Customermodel');
 exports.CustomerlocationUpdate = async (req, res) => {
     const { email, latitude, longitude } = req.body;
 
-    console.log("sdfghj",latitude, longitude, email);
+    // console.log("sdfghj",latitude, longitude, email);
 
     if (!email || latitude === undefined || longitude === undefined) {
         return res.status(400).json({ message: 'Email, latitude, and longitude are required' });

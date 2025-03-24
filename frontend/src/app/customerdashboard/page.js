@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import Map from "@/Components/Maps";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:4000", { transports: ["websocket"] });
+
 
 const CustomerDashboard = () => {
     const [location, setLocation] = useState({ lat: null, lng: null });
@@ -11,6 +15,9 @@ const CustomerDashboard = () => {
     const [email1, setEmail1] = useState("");
     const[customerAddress,setCustomerAddress]=useState("")
     const router = useRouter();
+    const [serviceProvider, setServiceProvider] = useState(null);
+    
+
 
     useEffect(() => {
         // Remove "spt" token (if any)
@@ -37,17 +44,34 @@ const CustomerDashboard = () => {
                     setCustomerAddress(response.data.Fulladdress)
 
                     alert(`Welcome, ${response.data.name}`);
-                    // alert(response.data.email)
+                    console.log("Socket Connected:", socket.connected);
+            socket.emit("registerCustomer", response.data.email);
+            
+            const handleNotification = (data) => {
+                console.log("Service provider assigned:", data);
+                alert(`Service Accepted! Provider: ${data.providerName}`);
+                setServiceProvider(data);
+            };
+        
+            socket.on("notification", handleNotification);
+        
+            
                 }
             } catch (err) {
                 console.error("Token verification error:", err);
                 Cookies.remove("ct"); // Remove invalid token
                 router.push("/");
             }
+            
+            
+
         };
 
+        
+
+       
         verifyToken();
-    }, []);
+    }, [socket]);
 
     useEffect(() => {
         function getCurrentLocation() {
@@ -128,8 +152,11 @@ const CustomerDashboard = () => {
             router.push("/");
         }, 500); // Ensure logout is processed before redirect
     };
-
+    // useEffect(() => {
+    //     );  // ✅ Added socket as dependency
+    
     return (
+        <>
         <div className="flex flex-col items-center w-full px-4 mt-4">
             {/* ✅ Navbar (Same as Before) */}
             <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
@@ -179,6 +206,22 @@ const CustomerDashboard = () => {
                 </div>
             </div>
         </div>
+        <div className="text-white p-6">
+      <h1 className="text-2xl">Customer Dashboard</h1>
+
+      {serviceProvider ? (
+        <div className="mt-4 bg-gray-800 p-4 rounded">
+          <h2 className="text-xl font-bold">Service Provider Details</h2>
+          <p><strong>Name:</strong> {serviceProvider.providerName}</p>
+          <p><strong>Email:</strong> {serviceProvider.providerEmail}</p>
+          <p><strong>Location:</strong> {serviceProvider.providerLocation.lat}, {serviceProvider.providerLocation.lng}</p>
+          <p><strong>Service Type:</strong> {serviceProvider.serviceType}</p>
+        </div>
+      ) : (
+        <p>No service provider assigned yet.</p>
+      )}
+    </div>
+        </>
     );
 };
 

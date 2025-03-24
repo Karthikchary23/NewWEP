@@ -43,7 +43,7 @@ exports.Updaterequest = async (req, res) => {
             }
         });
 
-        console.log(newRequest);
+        // console.log(newRequest);
 
         await newRequest.save();
         res.status(200).json({ message: "New request created successfully", newRequest });

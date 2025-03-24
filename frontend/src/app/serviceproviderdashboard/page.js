@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { io } from "socket.io-client"; // Import socket.io client
+import Map from"../../Components/Maps"
 
 const socket = io("http://localhost:4000", { transports: ["websocket"] });
 
@@ -129,65 +130,69 @@ const ServiceProviderDashboard = () => {
   const handleAccept = (requestId, customerlocation, servicetype, cuname) => {
     alert(customerlocation);
     if (!customerlocation) {
-      console.error("customerlocation is undefined or empty");
-      return alert("invalid location");
+        console.error("customerlocation is undefined or empty");
+        return alert("invalid location");
     }
     if (customerlocation) {
-      const coordinates = customerlocation;
-      if (
-        coordinates.length === 2 &&
-        coordinates.every((coord) => typeof coord === "number")
-      ) {
-        const culatitude = coordinates[0];
-        const culongitude = coordinates[1];
+        const coordinates = customerlocation;
+        if (
+            coordinates.length === 2 &&
+            coordinates.every((coord) => typeof coord === "number")
+        ) {
+            const culatitude = coordinates[0];
+            const culongitude = coordinates[1];
 
-        console.log("Latitude:", culatitude);
-        console.log("Longitude:", culongitude);
-        setcustomerLocation({ lat: culatitude, lng: culongitude });
-        const updatedCustomerLocation = { lat: culatitude, lng: culongitude };
-        const data = {
+            console.log("Latitude:", culatitude);
+            console.log("Longitude:", culongitude);
+            setcustomerLocation({ lat: culatitude, lng: culongitude });
+            const updatedCustomerLocation = { lat: culatitude, lng: culongitude };
+            const data = {
+                customername: cuname,
+                customermail: requestId,
+                customerlocation: updatedCustomerLocation, 
+                servicetype,
+                serviceprovidername: name,
+                serviceprovideremail: email1,
+                serviceproviderlocation: location, 
+            };
 
-          customername: cuname,
-          customermail: requestId,
-          customerlocation: updatedCustomerLocation, 
-          servicetype,
-          serviceprovidername: name,
-          serviceprovideremail: email1,
-          serviceproviderlocation: location, 
-        };
-
-        console.log("Data Object:", data); 
-        axios
-          .post("http://localhost:4000/available/isavailable", {
-            email: email1,
-          })
-          .then((response) => {
-            alert(response.data.message);
+            console.log("Data Object:", data); 
             axios
-              .post("http://localhost:4000/request/requestupdate", data)
-              .then((response) => {
-                console.log(response);
-                
+                .post("http://localhost:4000/available/isavailable", {
+                    email: email1,
+                })
+                .then((response) => {
+                    alert(response.data.message);
+                    axios
+                        .post("http://localhost:4000/request/requestupdate", data)
+                        .then((response) => {
+                            console.log(response);
+                            
+                            socket.emit("serviceAccepted", {
+                                customerEmail: requestId,  // Customer's email
+                                providerName: name,
+                                providerEmail: email1,
+                                providerLocation: location,
+                                serviceType: servicetype,
+                            });
 
-                socket.emit("acceptRequest", {
-                  requestId: data.requestId,
-                  providerEmail: data.serviceprovideremail,
+                            alert("Customer has been notified!");
+                        
+                        })
+                        .catch((error) => {
+                            console.error("Error updating request:", error);
+                        });
+                })
+                .catch((err) => {
+                    console.log(err);
                 });
-              })
-              .catch((error) => {
-                console.error("Error updating request:", error);
-              });
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else {
-        console.log("Invalid customerlocation format");
-      }
+        } else {
+            console.log("Invalid customerlocation format");
+        }
     } else {
-      console.error("customerlocation is not a valid string");
+        console.error("customerlocation is not a valid string");
     }
-  };
+};
 
   const handleReject = (requestId) => {
     socket.emit("rejectRequest", { requestId, providerEmail: email1 });
@@ -205,17 +210,19 @@ const ServiceProviderDashboard = () => {
         <p>Loading dashboard...</p>
       ) : (
         <>
-          <h1 className="text-3xl font-bold">
-            Welcome, {name}, {serviceType}
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 px-4 py-2 mt-4 rounded hover:bg-red-700 transition"
-          >
-            Logout
-          </button>
+          <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
+          Welcome, {name}, {serviceType}
 
-          <div className="mt-6">
+                <button
+                    onClick={handleLogout}
+                    className="bg-red-500 px-3 py-1 rounded hover:bg-red-700 transition cursor-pointer"
+                >
+                    Logout
+                </button>
+            </div>
+          <Map/>
+
+          <div className="mt-14">
             <h2 className="text-xl font-bold">Incoming Requests</h2>
             {requests.length > 0 ? (
               requests.map((req, index) => (
