@@ -9,6 +9,7 @@ const CustomerDashboard = () => {
     const [location, setLocation] = useState({ lat: null, lng: null });
     const [name, setName] = useState("");
     const [email1, setEmail1] = useState("");
+    const[customerAddress,setCustomerAddress]=useState("")
     const router = useRouter();
 
     useEffect(() => {
@@ -30,8 +31,11 @@ const CustomerDashboard = () => {
                 });
 
                 if (response.status === 200) {
+                    console.log("customer Respjnse",response.data)
                     setName(response.data.name);
                     setEmail1(response.data.email);
+                    setCustomerAddress(response.data.Fulladdress)
+
                     alert(`Welcome, ${response.data.name}`);
                     // alert(response.data.email)
                 }
@@ -103,6 +107,7 @@ const CustomerDashboard = () => {
                 email: email1,
                 latitude: location.lat,
                 longitude: location.lng,
+                Fulladdress:customerAddress,
                 serviceType, 
             });
 
@@ -128,7 +133,7 @@ const CustomerDashboard = () => {
         <div className="flex flex-col items-center w-full px-4 mt-4">
             {/* ✅ Navbar (Same as Before) */}
             <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
-                <div>Welcome to Customer Dashboard, {name}</div>
+                <div>Welcome to Customer Dashboard, {name} </div>
 
                 <button
                     onClick={handleLogout}

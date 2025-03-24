@@ -20,7 +20,7 @@ exports.CustomerTokenverifcation = async (req, res) => {
             return res.status(500).json({ message: 'Customer not found' });
         }
         // console.log("verified")
-        res.status(200).json({ message: 'Token verified',email:customerfound.email,name:customerfound.name });
+        res.status(200).json({ message: 'Token verified',email:customerfound.email,name:customerfound.name,Fulladdress:customerfound.Fulladdress       });
     } catch (error) {
         console.log("failed to verigy")
         res.status(500).json({ message: 'Something went wrong' });

@@ -1,44 +1,43 @@
-const socketIo = require("socket.io");
+const { Server } = require("socket.io");
 
 let io;
-
-exports.init = (server) => {
-    io = socketIo(server, {
+const serviceProviders = {}; 
+function init(server) {
+    io = new Server(server, {
         cors: {
             origin: "*",
-            methods: ["GET", "POST"]
-        }
+        },
     });
 
     io.on("connection", (socket) => {
-        console.log("New client connected");
+        // console.log("New provider connected:", socket.id);
 
-        socket.on("joinServiceProvider", (email) => {
-            console.log(`Service provider joined: ${email}`);
-            socket.join(email);
+        // Register service provider when they connect
+        socket.on("registerServiceProvider", (data) => {
+            console.log("data of registerd",data)
+            const { email, serviceType } = data;
+            serviceProviders[socket.id] = { email, serviceType };
+            // console.log("Registered providers:", serviceProviders);
         });
 
-        socket.on("acceptRequest", (data) => {
-            console.log(data)
-            
-            console.log(`Request accepted: ${data.requestId} by ${data.providerEmail}`);
-            
-        });
-
-        socket.on("rejectRequest", (data) => {
-            console.log(`Request rejected: ${data.customerId} by ${data.providerEmail}`);
-            
-        });
-
+        // Remove provider when they disconnect
         socket.on("disconnect", () => {
-            console.log("Client disconnected");
+            console.log("Provider disconnected:", socket.id);
+            delete serviceProviders[socket.id];
         });
     });
-};
+}
 
-exports.getIo = () => {
+function getIo() {
     if (!io) {
-        throw new Error("Socket.io not initialized!");
+        throw new Error("Socket.io not initialized");
     }
     return io;
-};
+}
+
+function getServiceProviders() {
+    return serviceProviders;
+}
+
+// ✅ Make sure we export everything correctly
+module.exports = { init, getIo, getServiceProviders };

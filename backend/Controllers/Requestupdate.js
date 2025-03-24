@@ -15,15 +15,15 @@ exports.Updaterequest = async (req, res) => {
         } = req.body;
 
         // Check if a request with the same customer and provider exists
-        let existingRequest = await Request.findOne({
-            customermail: customermail,
-            serviceprovideremail: serviceprovideremail,
-        });
+        // let existingRequest = await Request.findOne({
+        //     customermail: customermail,
+        //     serviceprovideremail: serviceprovideremail,
+        // });
 
-        if (existingRequest) {
-            console.log("Request already exists");
-            return res.json({ message: "Request already exists", existingRequest });
-        }
+        // if (existingRequest) {
+        //     console.log("Request already exists");
+        //     return res.json({ message: "Request already exists", existingRequest });
+        // }
 
         // If request does not exist, create a new one
         const newRequest = new Request({
