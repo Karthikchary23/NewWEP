@@ -145,7 +145,7 @@ const CustomerDashboard = () => {
             <Map/>
 
             {/* ✅ Service Options */}
-            <div className="grid grid-cols-2 gap-6 mt-8 w-full max-w-lg">
+            <div className="grid grid-cols-2 gap-6 mt-28 w-full max-w-lg">
                 {/* Electrician */}
                 <div 
                     onClick={() => handleRequestService("Electrician")} 
