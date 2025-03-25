@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { io } from "socket.io-client"; // Import socket.io client
-import Map from"../../Components/Maps"
+import Map from "../../Components/Maps";
 
 const socket = io("http://localhost:4000", { transports: ["websocket"] });
 
@@ -29,7 +29,6 @@ const ServiceProviderDashboard = () => {
       return;
     }
 
-    // Verify token via API
     const verifyToken = async () => {
       try {
         const response = await axios.post(
@@ -42,6 +41,7 @@ const ServiceProviderDashboard = () => {
           setEmail1(response.data.serviceprovider.email);
           setName(response.data.serviceprovider.firstName || "Provider");
           setServiceType(response.data.serviceprovider.serviceType);
+
           alert(
             `Welcome, ${response.data.serviceprovider.firstName || "Provider"}`
           );
@@ -53,8 +53,6 @@ const ServiceProviderDashboard = () => {
 
           // Register provider with socket
           socket.emit("registerServiceProvider", providerData);
-
-          
         }
       } catch (err) {
         console.error("Token verification error:", err);
@@ -66,6 +64,8 @@ const ServiceProviderDashboard = () => {
     };
 
     verifyToken();
+    const storedRequests = JSON.parse(localStorage.getItem("serviceAccepted")) || [];
+    setRequests(storedRequests);
   }, []);
 
   useEffect(() => {
@@ -112,11 +112,10 @@ const ServiceProviderDashboard = () => {
   }, [email1]);
 
   useEffect(() => {
-
     socket.on("newServiceRequest", (data) => {
       console.log("New service request received:", data);
       alert(`New request from ${data.customerName} for ${data.serviceType}`);
-      setRequests((prevRequests) => [...prevRequests, data]);
+      setRequests((prevRequests) => [...prevRequests, { ...data, isAccepted: false }]);
     });
 
     socket.on("connect", () => console.log("Socket connected"));
@@ -127,72 +126,100 @@ const ServiceProviderDashboard = () => {
     };
   }, []);
 
-  const handleAccept = (requestId, customerlocation, servicetype, cuname) => {
-    alert(customerlocation);
+  const handleAccept = (requestId, customerlocation, servicetype, cuname,fulladdress) => {
+    // alert(customerlocation);
     if (!customerlocation) {
-        console.error("customerlocation is undefined or empty");
-        return alert("invalid location");
+      console.error("customerlocation is undefined or empty");
+      return alert("invalid location");
     }
     if (customerlocation) {
-        const coordinates = customerlocation;
-        if (
-            coordinates.length === 2 &&
-            coordinates.every((coord) => typeof coord === "number")
-        ) {
-            const culatitude = coordinates[0];
-            const culongitude = coordinates[1];
+      const coordinates = customerlocation;
+      if (
+        coordinates.length === 2 &&
+        coordinates.every((coord) => typeof coord === "number")
+      ) {
+        const culatitude = coordinates[0];
+        const culongitude = coordinates[1];
 
-            console.log("Latitude:", culatitude);
-            console.log("Longitude:", culongitude);
-            setcustomerLocation({ lat: culatitude, lng: culongitude });
-            const updatedCustomerLocation = { lat: culatitude, lng: culongitude };
-            const data = {
-                customername: cuname,
-                customermail: requestId,
-                customerlocation: updatedCustomerLocation, 
-                servicetype,
-                serviceprovidername: name,
-                serviceprovideremail: email1,
-                serviceproviderlocation: location, 
-            };
+        console.log("Latitude:", culatitude);
+        console.log("Longitude:", culongitude);
+        setcustomerLocation({ lat: culatitude, lng: culongitude });
+        const updatedCustomerLocation = { lat: culatitude, lng: culongitude };
+        const data = {
+          customername: cuname,
+          customermail: requestId,
+          customerlocation: updatedCustomerLocation,
+          servicetype,
+          serviceprovidername: name,
+          serviceprovideremail: email1,
+          serviceproviderlocation: location,
+        };
 
-            console.log("Data Object:", data); 
+        console.log("Data Object:", data);
+        axios
+          .post("http://localhost:4000/available/isavailable", {
+            email: email1,
+          })
+          .then((response) => {
+            // alert(response.data.message);
             axios
-                .post("http://localhost:4000/available/isavailable", {
-                    email: email1,
-                })
-                .then((response) => {
-                    alert(response.data.message);
-                    axios
-                        .post("http://localhost:4000/request/requestupdate", data)
-                        .then((response) => {
-                            console.log(response);
-                            
-                            socket.emit("serviceAccepted", {
-                                customerEmail: requestId,  // Customer's email
-                                providerName: name,
-                                providerEmail: email1,
-                                providerLocation: location,
-                                serviceType: servicetype,
-                            });
+              .post("http://localhost:4000/request/requestupdate", data)
+              .then((response) => {
+                console.log(response);
 
-                            alert("Customer has been notified!");
-                        
-                        })
-                        .catch((error) => {
-                            console.error("Error updating request:", error);
-                        });
-                })
-                .catch((err) => {
-                    console.log(err);
+                socket.emit("serviceAccepted", {
+                  customerEmail: requestId, // Customer's email
+                  providerName: name,
+                  providerEmail: email1,
+                  providerLocation: location,
+                  serviceType: servicetype,
                 });
-        } else {
-            console.log("Invalid customerlocation format");
-        }
+
+                alert("Customer has been notified!");
+                let serviceDataArray =
+                  JSON.parse(localStorage.getItem("serviceAccepted")) || [];
+
+                // Create new data entry
+                const newServiceData = {
+                  customerName: cuname,
+                  customerId:requestId,
+                  serviceType: servicetype,
+                  customerlocation: updatedCustomerLocation,
+                  Fulladdress:fulladdress,
+                  providerName: name,
+                  providerEmail: email1,
+                  providerLocation: location,
+                  isAccepted:true
+                };
+
+                // Add new entry to the array
+                serviceDataArray.push(newServiceData);
+
+                // Store updated array in Local Storage
+                localStorage.setItem(
+                  "serviceAccepted",
+                  JSON.stringify(serviceDataArray)
+                );
+                setRequests((prevRequests) =>
+                  prevRequests.map((req) =>
+                    req.customerId === requestId ? { ...req, isAccepted: true } : req
+                  )
+                );
+              })
+              .catch((error) => {
+                console.error("Error updating request:", error);
+              });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        console.log("Invalid customerlocation format");
+      }
     } else {
-        console.error("customerlocation is not a valid string");
+      console.error("customerlocation is not a valid string");
     }
-};
+  };
 
   const handleReject = (requestId) => {
     socket.emit("rejectRequest", { requestId, providerEmail: email1 });
@@ -211,16 +238,15 @@ const ServiceProviderDashboard = () => {
       ) : (
         <>
           <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
-          Welcome, {name}, {serviceType}
-
-                <button
-                    onClick={handleLogout}
-                    className="bg-red-500 px-3 py-1 rounded hover:bg-red-700 transition cursor-pointer"
-                >
-                    Logout
-                </button>
-            </div>
-          <Map/>
+            Welcome, {name}, {serviceType}
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 px-3 py-1 rounded hover:bg-red-700 transition cursor-pointer"
+            >
+              Logout
+            </button>
+          </div>
+          <Map />
 
           <div className="mt-14">
             <h2 className="text-xl font-bold">Incoming Requests</h2>
@@ -241,29 +267,56 @@ const ServiceProviderDashboard = () => {
                   </p>
                   <p>
                     <strong>Location:</strong> {req.Fulladdress}
-
                   </p>
-                  <div className="mt-2">
-                    <button
-                      onClick={() =>
-                        handleAccept(
-                          req.customerId,
-                          req.customerLocation,
-                          req.serviceType,
-                          req.customerName
-                        )
-                      }
-                      className="bg-green-500 px-3 py-1 rounded text-white mx-2"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => handleReject(req._id)}
-                      className="bg-red-500 px-3 py-1 rounded text-white"
-                    >
-                      Reject
-                    </button>
-                  </div>
+                  
+                  {!req.isAccepted ? (
+  <div className="mt-2">
+    <button
+      onClick={() =>
+        handleAccept(
+          req.customerId,
+          req.customerLocation,
+          req.serviceType,
+          req.customerName,
+          req.Fulladdress
+        )
+      }
+      className="bg-green-500 px-3 py-1 rounded text-white mx-2"
+    >
+      Accept
+    </button>
+    <button
+      onClick={() => handleReject(req._id)}
+      className="bg-red-500 px-3 py-1 rounded text-white"
+    >
+      Reject
+    </button>
+  </div>
+) : (
+  <div className="mt-2">
+    <button
+      onClick={() =>
+        handleAccept(
+          req.customerId,
+          req.customerLocation,
+          req.serviceType,
+          req.customerName,
+          req.Fulladdress
+        )
+      }
+      className="bg-green-500 px-3 py-1 rounded text-white mx-2"
+    >
+      complete
+    </button>
+    <button
+      onClick={() => handleReject(req._id)}
+      className="bg-red-500 px-3 py-1 rounded text-white"
+    >
+      Cancel
+    </button>
+  </div>
+)}
+
                 </div>
               ))
             ) : (
