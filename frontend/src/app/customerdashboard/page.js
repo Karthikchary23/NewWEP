@@ -55,7 +55,7 @@ const CustomerDashboard = () => {
                     providerEmail: data.providerEmail,
                     providerName:data.providerName,
                     serviceType: data.serviceType,
-                    providerLocation:[data.providerLocation.lat,data.providerLocation.lng],
+                    providerLocation: { lat: data.providerLocation.lat, lng: data.providerLocation.lng },
                     isAccepted:true,
                     isVerified:false
                   };
@@ -67,7 +67,7 @@ const CustomerDashboard = () => {
 
 
           
-            setServiceProvider((prevRequests) => [...prevRequests, { ...data, isAccepted: false }]);
+            setServiceProvider(data);
 
             
           };
@@ -235,7 +235,7 @@ const CustomerDashboard = () => {
               <strong>Email:</strong> {serviceProvider.providerEmail}
             </p>
             <p>
-      <strong>Location:</strong> [{serviceProvider.providerLocation.lat} , {serviceProvider.providerLocation.lng}]
+      <strong>Location:</strong> {serviceProvider.providerLocation.lat} , {serviceProvider.providerLocation.lng}
     </p>
             <p>
               <strong>Service Type:</strong> {serviceProvider.serviceType}

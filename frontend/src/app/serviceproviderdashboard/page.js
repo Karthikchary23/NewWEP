@@ -113,9 +113,18 @@ const ServiceProviderDashboard = () => {
 
   useEffect(() => {
     socket.on("newServiceRequest", (data) => {
-      console.log("New service request received:", data);
+      let available=false
+      if (available )
+      {
+        console.log("New service request received:", data);
       alert(`New request from ${data.customerName} for ${data.serviceType}`);
       setRequests((prevRequests) => [...prevRequests, { ...data, isAccepted: false }]);
+
+      }
+      
+      
+
+      
     });
 
     socket.on("connect", () => console.log("Socket connected"));
