@@ -81,11 +81,16 @@ const CustomerDashboard = () => {
         const acceptedRequest = await fetchingAcceptedRequests(data.providerEmail, data.customerEmail);
         console.log("Fetched Request:", acceptedRequest);
 
+        // Add missing fields (email, address, and currentLocation) to the acceptedRequest object
+        const completeRequest = {
+          ...acceptedRequest
+        };
+
         // Prevent duplicate entries in `requests`
         setRequests((prevRequests) => {
-          const isDuplicate = prevRequests.some((req) => req.Mobile === acceptedRequest.Mobile);
+          const isDuplicate = prevRequests.some((req) => req.Mobile === completeRequest.Mobile);
           if (!isDuplicate) {
-            const updatedRequests = [...prevRequests, acceptedRequest];
+            const updatedRequests = [...prevRequests, completeRequest];
             localStorage.setItem("serviceProviderDetails", JSON.stringify(updatedRequests)); // Update local storage
             return updatedRequests;
           }
@@ -93,7 +98,7 @@ const CustomerDashboard = () => {
         });
 
         // Update `serviceProvider` state with the latest accepted request
-        setServiceProvider(acceptedRequest);
+        setServiceProvider(completeRequest);
       } catch (error) {
         console.error("Error handling notification:", error);
       }
@@ -213,16 +218,40 @@ const CustomerDashboard = () => {
   console.log("craztyy",requests)
   console.log("service provider ",serviceProvider)
 
-  const handleCancel = (mobile) => {
-    // Remove the provider from the requests state
-    const updatedRequests = requests.filter((provider) => provider.Mobile !== mobile);
-    setRequests(updatedRequests);
   
-    // Update local storage
-    localStorage.setItem("serviceProviderDetails", JSON.stringify(updatedRequests));
+  const handleCancel = (serviceProviderEmail) => {
+    // Send a request to the backend to delete the request
+    axios
+      .post("http://localhost:4000/request/deleterequest", {
+        customermail: email1,
+        serviceprovideremail: serviceProviderEmail,
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          alert("Request has been canceled!");
   
-    alert("Service provider request has been canceled!");
+          // Emit cancelRequest event to the server
+          socket.emit("cancelRequest", {
+            customerEmail: email1,
+            providerEmail: serviceProviderEmail,
+          });
+  
+          // Remove the request from the local state
+          const updatedRequests = requests.filter(
+            (provider) => provider.email !== serviceProviderEmail
+          );
+          setRequests(updatedRequests);
+  
+          // Update local storage
+          localStorage.setItem("serviceProviderDetails", JSON.stringify(updatedRequests));
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting request:", error);
+        alert("Failed to cancel the request. Please try again.");
+      });
   };
+  
 
   const handleVerify = (provider) => {
     alert(`Verified service provider: ${provider.Name}`);
@@ -299,7 +328,7 @@ const CustomerDashboard = () => {
           <strong>Location:</strong>{" "}
           {provider?.currentLocation?.coordinates &&
           provider.currentLocation.coordinates.length === 2
-            ? `${provider.currentLocation.coordinates[1]}, ${provider.currentLocation.coordinates[0]}`
+            ? `${provider.currentLocation.coordinates[0]}, ${provider.currentLocation.coordinates[1]}`
             : "Location not available"}
         </p>
         <p>
@@ -315,7 +344,7 @@ const CustomerDashboard = () => {
             Verify
           </button>
           <button
-            onClick={() => handleCancel(provider.Mobile)}
+            onClick={() => handleCancel(provider.email)}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition"
           >
             Cancel
