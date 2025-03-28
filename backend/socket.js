@@ -26,7 +26,8 @@ function init(server) {
           });
           
         socket.on("serviceAccepted", (data) => {
-            console.log("Service Accepted:", data);
+            console.log("Service Accepted now:", data);
+            console.log("types of data is ",typeof(data))
             io.to(data.customerEmail).emit("notification", data); 
           });
 

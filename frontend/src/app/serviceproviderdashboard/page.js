@@ -242,25 +242,36 @@ const ServiceProviderDashboard = () => {
     }
   };
 
-  const handleReject = (requestId) => {
+  const handleReject = (requestId,) => {
     // Emit cancelRequest event to the server
-    socket.emit("cancelRequest", {
-      requestId,
-      providerEmail: email1,
-    });
-
-    // Remove the request from the local state
-    setRequests((prevRequests) =>
-      prevRequests.filter((req) => req.customerId !== requestId)
-    );
-
-    // Optionally, update localStorage
-    const updatedRequests = JSON.parse(localStorage.getItem("serviceAccepted")) || [];
-    const filteredRequests = updatedRequests.filter((req) => req.customerId !== requestId);
-    localStorage.setItem("serviceAccepted", JSON.stringify(filteredRequests));
+    
 
     alert("Request has been canceled!");
     localStorage.setItem("available", "true");
+    axios.post("http://localhost:4000/request/deleterequest", {customermail:requestId,serviceprovideremail:email1})
+              .then((response) => {
+                if(response.status==200)
+                {
+                  socket.emit("cancelRequest", {
+                    requestId,
+                    providerEmail: email1,
+                  });
+              
+                  // Remove the request from the local state
+                  setRequests((prevRequests) =>
+                    prevRequests.filter((req) => req.customerId !== requestId)
+                  );
+              
+                  // Optionally, update localStorage
+                  const updatedRequests = JSON.parse(localStorage.getItem("serviceAccepted")) || [];
+                  const filteredRequests = updatedRequests.filter((req) => req.customerId !== requestId);
+                  localStorage.setItem("serviceAccepted", JSON.stringify(filteredRequests));
+                }
+
+              }) .catch((error) => {
+                console.error("Error Deleting request request:", error);
+              });
+
 
   };
 
@@ -348,7 +359,7 @@ const ServiceProviderDashboard = () => {
       complete
     </button>
     <button
-      onClick={() => handleReject(req.customerId
+      onClick={() => handleReject(req.customerId,email1
         
       )}
       className="bg-red-500 px-3 py-1 rounded text-white"

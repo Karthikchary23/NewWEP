@@ -2,12 +2,14 @@ const Request = require("../models/Requests"); // Import your model
 const ServiceProvider = require('../models/Serviceprovider');
 
 exports.AcceptedRequests = async (req, res) => {
+    console.log("i am called")
     try {
         console.log("testing", req.query);
         const customerEmail = req.query.customerEmail;
         const serviceProviderEmail = req.query.providerEmail;
 
         if (!customerEmail || !serviceProviderEmail) {
+            console.log("not found intitailly")
             return res.status(400).json({ message: "Both customerEmail and serviceProviderEmail are required" });
         }
 
@@ -24,14 +26,14 @@ exports.AcceptedRequests = async (req, res) => {
         const { servicetype, status, createdAt } = request;
 
         // Fetch the service provider details
-        const serviceProvider = await ServiceProvider.findOne({ email: serviceProviderEmail });
+        const serviceProvider = await ServiceProvider.findOne({ email: serviceProviderEmail  });
 
         if (!serviceProvider) {
             return res.status(404).json({ message: "Service provider not found" });
         }
 
         // Extract the required fields
-        const { firstName, lastName, mobile, ratings, serviceType } = serviceProvider;
+        const { firstName, lastName, mobile, ratings, serviceType,email,currentLocation } = serviceProvider;
 
         // Format the createdAt field into an easily sortable format (ISO string)
         const requestAcceptedTimeAndDate = new Date(createdAt).toISOString();
@@ -43,9 +45,14 @@ exports.AcceptedRequests = async (req, res) => {
             Mobile: mobile,
             Ratings: ratings,
             Status: status,
+            email:email,
+            currentLocation,currentLocation,
+
+
+
             RequestAcceptedTimeAndDate: requestAcceptedTimeAndDate
         };
-        console.log(formattedResult);
+        console.log("Formated Result",formattedResult);
         // Send the formatted result as the response
         res.status(200).json(formattedResult);
     } catch (error) {
