@@ -64,6 +64,14 @@ const ServiceProviderDashboard = () => {
     };
 
     verifyToken();
+    const check = localStorage.getItem("available") ;
+    if(!check)
+    {
+      localStorage.setItem("available", "true");
+
+    }
+
+
     const storedRequests = JSON.parse(localStorage.getItem("serviceAccepted")) || [];
     setRequests(storedRequests);
   }, []);
@@ -113,8 +121,9 @@ const ServiceProviderDashboard = () => {
 
   useEffect(() => {
     socket.on("newServiceRequest", (data) => {
-      let available=false
-      if (available )
+      const isAvailable = localStorage.getItem("available") === "true";
+
+      if (isAvailable )
       {
         console.log("New service request received:", data);
       alert(`New request from ${data.customerName} for ${data.serviceType}`);
@@ -185,6 +194,8 @@ const ServiceProviderDashboard = () => {
                 });
 
                 alert("Customer has been notified!");
+                localStorage.setItem("available", "false");
+
                 let serviceDataArray =
                   JSON.parse(localStorage.getItem("serviceAccepted")) || [];
 
@@ -198,7 +209,8 @@ const ServiceProviderDashboard = () => {
                   providerName: name,
                   providerEmail: email1,
                   providerLocation: location,
-                  isAccepted:true
+                  isAccepted:true,
+                  isAvailable:false
                 };
 
                 // Add new entry to the array
@@ -231,7 +243,25 @@ const ServiceProviderDashboard = () => {
   };
 
   const handleReject = (requestId) => {
-    socket.emit("rejectRequest", { requestId, providerEmail: email1 });
+    // Emit cancelRequest event to the server
+    socket.emit("cancelRequest", {
+      requestId,
+      providerEmail: email1,
+    });
+
+    // Remove the request from the local state
+    setRequests((prevRequests) =>
+      prevRequests.filter((req) => req.customerId !== requestId)
+    );
+
+    // Optionally, update localStorage
+    const updatedRequests = JSON.parse(localStorage.getItem("serviceAccepted")) || [];
+    const filteredRequests = updatedRequests.filter((req) => req.customerId !== requestId);
+    localStorage.setItem("serviceAccepted", JSON.stringify(filteredRequests));
+
+    alert("Request has been canceled!");
+    localStorage.setItem("available", "true");
+
   };
 
   const handleLogout = () => {
@@ -295,7 +325,7 @@ const ServiceProviderDashboard = () => {
       Accept
     </button>
     <button
-      onClick={() => handleReject(req._id)}
+      onClick={() => handleReject(req.customerId)}
       className="bg-red-500 px-3 py-1 rounded text-white"
     >
       Reject
@@ -318,7 +348,9 @@ const ServiceProviderDashboard = () => {
       complete
     </button>
     <button
-      onClick={() => handleReject(req._id)}
+      onClick={() => handleReject(req.customerId
+        
+      )}
       className="bg-red-500 px-3 py-1 rounded text-white"
     >
       Cancel

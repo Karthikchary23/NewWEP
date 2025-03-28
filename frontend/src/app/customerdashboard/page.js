@@ -15,7 +15,7 @@ const CustomerDashboard = () => {
   const [customerAddress, setCustomerAddress] = useState("");
   const router = useRouter();
   const [serviceProvider, setServiceProvider] = useState("");
-
+  const [requests,setRequests] = useState([]);
   useEffect(() => {
     // Remove "spt" token (if any)
     Cookies.remove("spt");
@@ -25,6 +25,21 @@ const CustomerDashboard = () => {
       router.push("/");
       return;
     }
+    const fetchingAcceptedRequests = async(providerEmail,customerEmail) => {
+      const res = await axios.get("http://localhost:4000/request/acceptedrequests", {
+        params: {
+          providerEmail: providerEmail,
+          customerEmail: customerEmail
+        }
+      });
+      if(res.status===200){
+        // const data = res.json();
+        setRequests((prevRequests)=> [...prevRequests,res.data])
+        return res;
+      } else{
+        return Error;
+      }
+    }
 
     // ✅ Verify Token & Fetch User Details
     const verifyToken = async () => {
@@ -46,10 +61,13 @@ const CustomerDashboard = () => {
           console.log("Socket Connected:", socket.connected);
           socket.emit("registerCustomer", response.data.email);
 
-          const handleNotification = (data) => {
-            console.log("Service provider assigned:", data);
+          const handleNotification = async (data) => {
+            // console.log("Service provider assigned:", data);
             alert(`Service Accepted! Provider: ${data.providerName}`);
-            console.log(" Reques Accept data",data)
+            // console.log(" Reques Accept data",data)
+            const acceptedRequests = await fetchingAcceptedRequests(data.providerEmail,data.customerEmail);
+            console.log("fetched Request",acceptedRequests);
+           
             let serviceDataArray =JSON.parse(localStorage.getItem("servicesTaken")) || [];
                   const newServiceData = {
                     providerEmail: data.providerEmail,
@@ -71,7 +89,8 @@ const CustomerDashboard = () => {
 
             
           };
-          console.log("i am don",serviceProvider)
+          // console.log("i am don",serviceProvider)
+        
 
           socket.on("notification", handleNotification);
         }
@@ -83,7 +102,7 @@ const CustomerDashboard = () => {
     };
 
     verifyToken();
-  }, [socket]);
+  }, []);
 
   useEffect(() => {
     function getCurrentLocation() {
@@ -170,6 +189,9 @@ const CustomerDashboard = () => {
       router.push("/");
     }, 500); // Ensure logout is processed before redirect
   };
+  console.log("craztyy",requests)
+  console.log("service provider ",serviceProvider)
+
  
 
   return (
