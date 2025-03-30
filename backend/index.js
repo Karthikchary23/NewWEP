@@ -42,6 +42,7 @@ app.use("/request",RequestRouter)
 app.use("/available",ServiceproviderRoutes)
 app.use("/serviceproviderlocation",ServiceproviderRoutes)
 app.use("/customerlocation",CustomerRoutes)
+// app.use("/otpverify",OtpRoutes)
 // app.use('/request',RequestRouter)
 
 

@@ -16,6 +16,7 @@ const CustomerDashboard = () => {
   const router = useRouter();
   const [serviceProvider, setServiceProvider] = useState([]);
   const [requests,setRequests] = useState([]);
+  const[otp,setOtp]=useState()
   
   useEffect(() => {
     // Remove "spt" token (if any)
@@ -254,8 +255,24 @@ const CustomerDashboard = () => {
   
 
   const handleVerify = (provider) => {
-    alert(`Verified service provider: ${provider.Name}`);
-    // Add your custom logic here (e.g., send verification to the server)
+    axios
+      .post("http://localhost:4000/otp/otpverification", {
+        customerEmail: email1,
+        serviceProviderEmail: provider.email,
+        otp: otp,
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          alert(`Verified service provider: ${provider.Name}`);
+          setOtp("")
+        } else {
+          alert("Enter valid OTP");
+        }
+      })
+      .catch((error) => {
+        console.error("Error verifying OTP:", error);
+        alert("Enter valid otp");
+      });
   };
 
   return (
@@ -334,6 +351,12 @@ const CustomerDashboard = () => {
         <p>
           <strong>Service Type:</strong> {provider.ServiceType || "N/A"}
         </p>
+        <div>
+          <p>Enter Otp </p><input type="text" className="border border-white rounded px-2 py-1"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}/>
+
+        </div>
 
         {/* Buttons for Verify and Cancel */}
         <div className="flex gap-4 mt-4">

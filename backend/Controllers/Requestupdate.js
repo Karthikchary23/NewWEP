@@ -21,6 +21,10 @@ exports.Updaterequest = async (req, res) => {
     });
 
     if (!existingRequest) {
+      // Generate a 6-digit random OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("Generated OTP:", otp);
+
       // If request does not exist, create a new one
       const newRequest = new Request({
         customermail: customermail,
@@ -37,14 +41,16 @@ exports.Updaterequest = async (req, res) => {
           lat: serviceproviderlocation.lat, // ✅ Corrected access
           lng: serviceproviderlocation.lng, // ✅ Corrected access
         },
+        otp: otp, // Store the generated OTP in the request
       });
 
-      // console.log(newRequest);
-
       await newRequest.save();
-      res
-        .status(200)
-        .json({ message: "New request created successfully", newRequest });
+      res.status(200).json({
+        message: "New request created successfully",
+        newRequest,
+      });
+    } else {
+      res.status(400).json({ message: "Request already exists" });
     }
   } catch (error) {
     console.error("Error processing request:", error);

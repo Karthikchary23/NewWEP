@@ -64,15 +64,13 @@ const ServiceProviderDashboard = () => {
     };
 
     verifyToken();
-    const check = localStorage.getItem("available") ;
-    if(!check)
-    {
+    const check = localStorage.getItem("available");
+    if (!check) {
       localStorage.setItem("available", "true");
-
     }
 
-
-    const storedRequests = JSON.parse(localStorage.getItem("serviceAccepted")) || [];
+    const storedRequests =
+      JSON.parse(localStorage.getItem("serviceAccepted")) || [];
     setRequests(storedRequests);
   }, []);
 
@@ -123,28 +121,31 @@ const ServiceProviderDashboard = () => {
     socket.on("newServiceRequest", (data) => {
       const isAvailable = localStorage.getItem("available") === "true";
 
-      if (isAvailable )
-      {
+      if (isAvailable) {
         console.log("New service request received:", data);
-      alert(`New request from ${data.customerName} for ${data.serviceType}`);
-      setRequests((prevRequests) => [...prevRequests, { ...data, isAccepted: false }]);
-
+        alert(`New request from ${data.customerName} for ${data.serviceType}`);
+        setRequests((prevRequests) => [
+          ...prevRequests,
+          { ...data, isAccepted: false },
+        ]);
       }
-      
-      
-
-      
     });
 
     socket.on("connect", () => console.log("Socket connected"));
-    socket.on("disconnect", () => console.log("Socket disconnected"));
+    // socket.on("disconnect", () => console.log("Socket disconnected"));
 
     return () => {
       socket.off("newServiceRequest");
     };
   }, []);
 
-  const handleAccept = (requestId, customerlocation, servicetype, cuname,fulladdress) => {
+  const handleAccept = (
+    requestId,
+    customerlocation,
+    servicetype,
+    cuname,
+    fulladdress
+  ) => {
     // alert(customerlocation);
     if (!customerlocation) {
       console.error("customerlocation is undefined or empty");
@@ -202,15 +203,16 @@ const ServiceProviderDashboard = () => {
                 // Create new data entry
                 const newServiceData = {
                   customerName: cuname,
-                  customerId:requestId,
+                  customerId: requestId,
                   serviceType: servicetype,
                   customerlocation: updatedCustomerLocation,
-                  Fulladdress:fulladdress,
+                  Fulladdress: fulladdress,
                   providerName: name,
                   providerEmail: email1,
+                  otp: response.data.newRequest.otp,
                   providerLocation: location,
-                  isAccepted:true,
-                  isAvailable:false
+                  isAccepted: true,
+                  isAvailable: false,
                 };
 
                 // Add new entry to the array
@@ -223,7 +225,9 @@ const ServiceProviderDashboard = () => {
                 );
                 setRequests((prevRequests) =>
                   prevRequests.map((req) =>
-                    req.customerId === requestId ? { ...req, isAccepted: true } : req
+                    req.customerId === requestId
+                      ? { ...req, isAccepted: true }
+                      : req
                   )
                 );
               })
@@ -242,37 +246,43 @@ const ServiceProviderDashboard = () => {
     }
   };
 
-  const handleReject = (requestId,) => {
+  const handleReject = (requestId) => {
     // Emit cancelRequest event to the server
-    
 
     alert("Request has been canceled!");
     localStorage.setItem("available", "true");
-    axios.post("http://localhost:4000/request/deleterequest", {customermail:requestId,serviceprovideremail:email1})
-              .then((response) => {
-                if(response.status==200)
-                {
-                  socket.emit("cancelRequest", {
-                    requestId,
-                    providerEmail: email1,
-                  });
-              
-                  // Remove the request from the local state
-                  setRequests((prevRequests) =>
-                    prevRequests.filter((req) => req.customerId !== requestId)
-                  );
-              
-                  // Optionally, update localStorage
-                  const updatedRequests = JSON.parse(localStorage.getItem("serviceAccepted")) || [];
-                  const filteredRequests = updatedRequests.filter((req) => req.customerId !== requestId);
-                  localStorage.setItem("serviceAccepted", JSON.stringify(filteredRequests));
-                }
+    axios
+      .post("http://localhost:4000/request/deleterequest", {
+        customermail: requestId,
+        serviceprovideremail: email1,
+      })
+      .then((response) => {
+        if (response.status == 200) {
+          socket.emit("cancelRequest", {
+            requestId,
+            providerEmail: email1,
+          });
 
-              }) .catch((error) => {
-                console.error("Error Deleting request request:", error);
-              });
+          // Remove the request from the local state
+          setRequests((prevRequests) =>
+            prevRequests.filter((req) => req.customerId !== requestId)
+          );
 
-
+          // Optionally, update localStorage
+          const updatedRequests =
+            JSON.parse(localStorage.getItem("serviceAccepted")) || [];
+          const filteredRequests = updatedRequests.filter(
+            (req) => req.customerId !== requestId
+          );
+          localStorage.setItem(
+            "serviceAccepted",
+            JSON.stringify(filteredRequests)
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error Deleting request request:", error);
+      });
   };
 
   const handleLogout = () => {
@@ -318,57 +328,60 @@ const ServiceProviderDashboard = () => {
                   <p>
                     <strong>Location:</strong> {req.Fulladdress}
                   </p>
-                  
-                  {!req.isAccepted ? (
-  <div className="mt-2">
-    <button
-      onClick={() =>
-        handleAccept(
-          req.customerId,
-          req.customerLocation,
-          req.serviceType,
-          req.customerName,
-          req.Fulladdress
-        )
-      }
-      className="bg-green-500 px-3 py-1 rounded text-white mx-2"
-    >
-      Accept
-    </button>
-    <button
-      onClick={() => handleReject(req.customerId)}
-      className="bg-red-500 px-3 py-1 rounded text-white"
-    >
-      Reject
-    </button>
-  </div>
-) : (
-  <div className="mt-2">
-    <button
-      onClick={() =>
-        handleAccept(
-          req.customerId,
-          req.customerLocation,
-          req.serviceType,
-          req.customerName,
-          req.Fulladdress
-        )
-      }
-      className="bg-green-500 px-3 py-1 rounded text-white mx-2"
-    >
-      complete
-    </button>
-    <button
-      onClick={() => handleReject(req.customerId,email1
-        
-      )}
-      className="bg-red-500 px-3 py-1 rounded text-white"
-    >
-      Cancel
-    </button>
-  </div>
-)}
 
+                  {!req.isAccepted ? (
+                    <div className="mt-2">
+                      <button
+                        onClick={() =>
+                          handleAccept(
+                            req.customerId,
+                            req.customerLocation,
+                            req.serviceType,
+                            req.customerName,
+                            req.Fulladdress
+                          )
+                        }
+                        className="bg-green-500 px-3 py-1 rounded text-white mx-2"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleReject(req.customerId)}
+                        className="bg-red-500 px-3 py-1 rounded text-white"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <button
+                        onClick={() =>
+                          handleAccept(
+                            req.customerId,
+                            req.customerLocation,
+                            req.serviceType,
+                            req.customerName,
+                            req.Fulladdress
+                          )
+                        }
+                        className="bg-green-500 px-3 py-1 rounded text-white mx-2"
+                      >
+                        complete
+                      </button>
+                      <button
+                        onClick={() => handleReject(req.customerId, email1)}
+                        className="bg-red-500 px-3 py-1 rounded text-white"
+                      >
+                        Cancel
+                      </button>
+                      <div>
+                        <p className="">
+                          <strong>Otp:</strong>
+                          {req.otp}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             ) : (
