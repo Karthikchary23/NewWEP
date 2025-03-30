@@ -259,7 +259,7 @@ const ServiceProviderDashboard = () => {
       .then((response) => {
         if (response.status == 200) {
           socket.emit("cancelRequest", {
-            requestId,
+            customerEmail:requestId,
             providerEmail: email1,
           });
 
@@ -278,6 +278,7 @@ const ServiceProviderDashboard = () => {
             "serviceAccepted",
             JSON.stringify(filteredRequests)
           );
+
         }
       })
       .catch((error) => {
@@ -290,7 +291,22 @@ const ServiceProviderDashboard = () => {
     Cookies.remove("spt", { path: "/" });
     setTimeout(() => router.push("/"), 500);
   };
+  useEffect(() => {
+    socket.on("requestCanceledbycutomer", (data) => {
+      alert(`Request canceled by the customer: ${data.customerEmail}`);
+      const updatedRequests = requests.filter(
+        (req) => req.customerId !== data.customerEmail
+      );
+      setRequests(updatedRequests);
+      localStorage.setItem("serviceAccepted", JSON.stringify(updatedRequests));
+      localStorage.setItem("available", "true");
 
+    });
+
+    return () => {
+      socket.off("requestCanceledbycutomer");
+    };
+  }, [requests]);
   return (
     <div className="text-2xl text-white p-6">
       {loading ? (
@@ -346,7 +362,7 @@ const ServiceProviderDashboard = () => {
                         Accept
                       </button>
                       <button
-                        onClick={() => handleReject(req.customerId)}
+                        onClick={() => handleReject1(req.customerId)}
                         className="bg-red-500 px-3 py-1 rounded text-white"
                       >
                         Reject

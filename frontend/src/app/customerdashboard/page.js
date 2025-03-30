@@ -251,8 +251,10 @@ const CustomerDashboard = () => {
         console.error("Error deleting request:", error);
         alert("Failed to cancel the request. Please try again.");
       });
+
+
   };
-  
+ 
 
   const handleVerify = (provider) => {
     axios
@@ -274,6 +276,20 @@ const CustomerDashboard = () => {
         alert("Enter valid otp");
       });
   };
+  useEffect(() => {
+    socket.on("requestCanceledbyprovider", (data) => {
+      alert(`Request canceled of the service provider: ${data.providerEmail}`);
+      const updatedRequests = requests.filter(
+        (provider) => provider.email !== data.providerEmail
+      );
+      setRequests(updatedRequests);
+      localStorage.setItem("serviceProviderDetails", JSON.stringify(updatedRequests));
+    });
+  
+    return () => {
+      socket.off("requestCanceled");
+    };
+  }, []);
 
   return (
     <>
