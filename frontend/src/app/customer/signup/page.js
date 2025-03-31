@@ -24,7 +24,7 @@ export default function CustomerSignup() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post("http://localhost:4000/otp/send-otp", {
+      const response = await axios.post("https://wepbackend23.onrender.com/otp/send-otp", {
         email: data.email,
         mobile: data.mobile,
       });
@@ -85,7 +85,7 @@ export default function CustomerSignup() {
       };
 
       const response = await axios.post(
-        "http://localhost:4000/customer/customersignup",
+        "https://wepbackend23.onrender.com/customer/customersignup",
         signupData
       );
 

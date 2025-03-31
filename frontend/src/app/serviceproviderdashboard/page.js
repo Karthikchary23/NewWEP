@@ -6,7 +6,7 @@ import axios from "axios";
 import { io } from "socket.io-client"; // Import socket.io client
 import Map from "../../Components/Maps";
 
-const socket = io("http://localhost:4000", { transports: ["websocket"] });
+const socket = io("https://wepbackend23.onrender.com", { transports: ["websocket"] });
 
 const ServiceProviderDashboard = () => {
   const router = useRouter();
@@ -18,7 +18,8 @@ const ServiceProviderDashboard = () => {
     lng: null,
   });
   const [serviceType, setServiceType] = useState("");
-
+  const [servicesProvidedCount,setServicesProvidedCount] = useState(0);
+  const [servicesRejectedCount,setServicesRejectedCount] = useState(0);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +33,7 @@ const ServiceProviderDashboard = () => {
     const verifyToken = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:4000/serviceprovidertoken/serviceprovidertokenverify",
+          "https://wepbackend23.onrender.com/serviceprovidertoken/serviceprovidertokenverify",
           { token: spt }
         );
 
@@ -101,7 +102,7 @@ const ServiceProviderDashboard = () => {
       if (!email1) return;
       try {
         await axios.post(
-          "http://localhost:4000/serviceproviderlocation/update-location",
+          "https://wepbackend23.onrender.com/serviceproviderlocation/update-location",
           {
             latitude,
             longitude,
@@ -176,13 +177,13 @@ const ServiceProviderDashboard = () => {
 
         console.log("Data Object:", data);
         axios
-          .post("http://localhost:4000/available/isavailable", {
+          .post("https://wepbackend23.onrender.com/available/isavailable", {
             email: email1,
           })
           .then((response) => {
             // alert(response.data.message);
             axios
-              .post("http://localhost:4000/request/requestupdate", data)
+              .post("https://wepbackend23.onrender.com/request/requestupdate", data)
               .then((response) => {
                 console.log(response);
 
@@ -252,14 +253,14 @@ const ServiceProviderDashboard = () => {
     alert("Request has been canceled!");
     localStorage.setItem("available", "true");
     axios
-      .post("http://localhost:4000/request/deleterequest", {
+      .post("https://wepbackend23.onrender.com/request/deleterequest", {
         customermail: requestId,
         serviceprovideremail: email1,
       })
-      .then((response) => {
+      .then(async (response) => {
         if (response.status == 200) {
           socket.emit("cancelRequest", {
-            customerEmail:requestId,
+            customerEmail: requestId,
             providerEmail: email1,
           });
 
@@ -278,6 +279,14 @@ const ServiceProviderDashboard = () => {
             "serviceAccepted",
             JSON.stringify(filteredRequests)
           );
+          await axios.post("https://wepbackend23.onrender.com/serviceprovider/servicesrejectedcount", { providerEmail: email1 })
+            .then((response) => {
+              console.log(response);
+              setServicesRejectedCount(response.data.servicesRejectedCount);
+            })
+            .catch((error) => {
+              console.log("Error at incrementing service rejected count for provider", error);
+            })
 
         }
       })
@@ -307,6 +316,30 @@ const ServiceProviderDashboard = () => {
       socket.off("requestCanceledbycutomer");
     };
   }, [requests]);
+
+  const handleComplete = async (requestId) => {
+    await axios.post("https://wepbackend23.onrender.com/serviceprovider/servicesprovidedcount", { providerEmail: email1 })
+      .then((response) => {
+        console.log(response);
+        setServicesProvidedCount(response.data.servicesProvidedCount);
+        setRequests((prevRequests) =>
+          prevRequests.filter((req) => req.customerId !== requestId)
+        );
+        const updatedRequests =
+          JSON.parse(localStorage.getItem("serviceAccepted")) || [];
+        const filteredRequests = updatedRequests.filter(
+          (req) => req.customerId !== requestId
+        );
+        localStorage.setItem(
+          "serviceAccepted",
+          JSON.stringify(filteredRequests)
+        );
+      })
+      .catch((error) => {
+        console.log("Error at incrementing service provided count for provider", error);
+      })
+  }
+
   return (
     <div className="text-2xl text-white p-6">
       {loading ? (
@@ -361,24 +394,13 @@ const ServiceProviderDashboard = () => {
                       >
                         Accept
                       </button>
-                      <button
-                        onClick={() => handleReject1(req.customerId)}
-                        className="bg-red-500 px-3 py-1 rounded text-white"
-                      >
-                        Reject
-                      </button>
+                      
                     </div>
                   ) : (
                     <div className="mt-2">
                       <button
                         onClick={() =>
-                          handleAccept(
-                            req.customerId,
-                            req.customerLocation,
-                            req.serviceType,
-                            req.customerName,
-                            req.Fulladdress
-                          )
+                          handleComplete(req.customerId,email1)
                         }
                         className="bg-green-500 px-3 py-1 rounded text-white mx-2"
                       >

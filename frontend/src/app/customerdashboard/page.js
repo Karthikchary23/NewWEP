@@ -6,7 +6,7 @@ import axios from "axios";
 import Map from "@/Components/Maps";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:4000", { transports: ["websocket"] });
+const socket = io("https://wepbackend23.onrender.com", { transports: ["websocket"] });
 
 const CustomerDashboard = () => {
   const [location, setLocation] = useState({ lat: null, lng: null });
@@ -16,8 +16,10 @@ const CustomerDashboard = () => {
   const router = useRouter();
   const [serviceProvider, setServiceProvider] = useState([]);
   const [requests,setRequests] = useState([]);
-  const[otp,setOtp]=useState()
-  
+  const[otp,setOtp]=useState();
+  const [servicesRecievedCount, setServicesRecievedCount] = useState(0);
+  const [servicesRejectedCount, setServicesRejectedCount] = useState(0);
+
   useEffect(() => {
     // Remove "spt" token (if any)
     Cookies.remove("spt");
@@ -31,7 +33,7 @@ const CustomerDashboard = () => {
     const verifyToken = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:4000/customertoken/customertokenverify",
+          "https://wepbackend23.onrender.com/customertoken/customertokenverify",
           {
             token: ct,
           }
@@ -60,7 +62,7 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     const fetchingAcceptedRequests = async (providerEmail, customerEmail) => {
-      const res = await axios.get("http://localhost:4000/request/acceptedrequests", {
+      const res = await axios.get("https://wepbackend23.onrender.com/request/acceptedrequests", {
         params: {
           providerEmail: providerEmail,
           customerEmail: customerEmail,
@@ -87,7 +89,7 @@ const CustomerDashboard = () => {
           ...acceptedRequest
         };
 
-        // Prevent duplicate entries in `requests`
+        // Prevent duplicate entries in requests
         setRequests((prevRequests) => {
           const isDuplicate = prevRequests.some((req) => req.Mobile === completeRequest.Mobile);
           if (!isDuplicate) {
@@ -98,7 +100,7 @@ const CustomerDashboard = () => {
           return prevRequests;
         });
 
-        // Update `serviceProvider` state with the latest accepted request
+        // Update serviceProvider state with the latest accepted request
         setServiceProvider(completeRequest);
       } catch (error) {
         console.error("Error handling notification:", error);
@@ -146,7 +148,7 @@ const CustomerDashboard = () => {
 
       try {
         await axios.post(
-          "http://localhost:4000/customerlocation/update-location",
+          "https://wepbackend23.onrender.com/customerlocation/update-location",
           {
             latitude,
             longitude,
@@ -188,7 +190,7 @@ const CustomerDashboard = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/request/request-service",
+        "https://wepbackend23.onrender.com/request/request-service",
         {
           name,
           email: email1,
@@ -223,11 +225,11 @@ const CustomerDashboard = () => {
   const handleCancel = (serviceProviderEmail) => {
     // Send a request to the backend to delete the request
     axios
-      .post("http://localhost:4000/request/deleterequest", {
+      .post("https://wepbackend23.onrender.com/request/deleterequest", {
         customermail: email1,
         serviceprovideremail: serviceProviderEmail,
       })
-      .then((response) => {
+      .then(async (response) => {
         if (response.status === 200) {
           alert("Request has been canceled!");
   
@@ -245,6 +247,16 @@ const CustomerDashboard = () => {
   
           // Update local storage
           localStorage.setItem("serviceProviderDetails", JSON.stringify(updatedRequests));
+          await axios.post("https://wepbackend23.onrender.com/customer/servicerejectedcount",{customerEmail: email1})
+          .then((response)=>{
+            if(response.status===200){
+                console.log(response);
+                setServicesRejectedCount(response.data.servicesRejectedCount);
+            }
+          })
+          .catch((error)=>{
+            console.log("Error incrementing service recieved count",error);
+          });
         }
       })
       .catch((error) => {
@@ -256,17 +268,27 @@ const CustomerDashboard = () => {
   };
  
 
-  const handleVerify = (provider) => {
-    axios
-      .post("http://localhost:4000/otp/otpverification", {
+  const handleVerify = async (provider) => {
+    await axios
+      .post("https://wepbackend23.onrender.com/otp/otpverification", {
         customerEmail: email1,
         serviceProviderEmail: provider.email,
         otp: otp,
       })
-      .then((response) => {
+      .then(async (response) => {
         if (response.status === 200) {
           alert(`Verified service provider: ${provider.Name}`);
           setOtp("")
+          await axios.post("https://wepbackend23.onrender.com/customer/servicerecievedcount",{customerEmail: email1})
+          .then((response)=>{
+            if(response.status===200){
+                console.log(response);
+                setServicesRecievedCount(response.data.servicesRecievedCount);
+            }
+          })
+          .catch((error)=>{
+            console.log("Error incrementing service recieved count",error);
+          });
         } else {
           alert("Enter valid OTP");
         }

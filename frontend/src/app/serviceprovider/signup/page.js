@@ -27,7 +27,7 @@ export default function ServiceProviderSignup() {
         setIsLoading(true);
         setSignupError(null);
 
-        const response = await axios.post("http://localhost:4000/otp/send-otp", {
+        const response = await axios.post("https://wepbackend23.onrender.com/otp/send-otp", {
             email: data.email,
             mobile: data.mobile
         });
@@ -71,7 +71,7 @@ export default function ServiceProviderSignup() {
         password: data.password,
       };
 
-      const response = await axios.post("http://localhost:4000/service-provider/service-providersignup", signupData);
+      const response = await axios.post("https://wepbackend23.onrender.com/service-provider/service-providersignup", signupData);
       console.log(response.status)
       console.log(response.data.message)
 

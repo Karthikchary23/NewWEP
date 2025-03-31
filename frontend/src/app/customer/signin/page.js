@@ -25,7 +25,7 @@ export default function SignIn() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post("http://localhost:4000/customersigninotp/customerdashboardsigninotpsend-otp", {
+      const response = await axios.post("https://wepbackend23.onrender.com/customersigninotp/customerdashboardsigninotpsend-otp", {
         email: data.email,
       });
 
@@ -70,7 +70,7 @@ export default function SignIn() {
     setError(null);
     try {
       // Final sign-in API call
-      const response = await axios.post("http://localhost:4000/customer/signin", {
+      const response = await axios.post("https://wepbackend23.onrender.com/customer/signin", {
         email: data.email,
         password: data.password,
        
