@@ -1,5 +1,5 @@
 const express = require('express');
-const { Servicesignup } = require('../controllers/Serviceproviderauth');
+const { Servicesignup } = require('../Controllers/Serviceproviderauth');
 const { ServiceproviderSignin } = require('../Controllers/ServiceproviderLogin');
 const { ServiceproviderTokenverifcation } = require('../Controllers/ServiceproviderTokenverify');
 const { ServiceProvicerlocationUpdate } = require('../Controllers/ServiceProviderLocation');

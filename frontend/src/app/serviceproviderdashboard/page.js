@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { io } from "socket.io-client"; // Import socket.io client
-import Map from "../../Components/Maps";
+// import Map from "../../Components/Maps";
+import dynamic from "next/dynamic";
+const MapComponent = dynamic(() => import("../../Components/Maps.js"), { ssr: false })
 
 const socket = io("https://wepbackend23.onrender.com", { transports: ["websocket"] });
 
@@ -355,7 +357,7 @@ const ServiceProviderDashboard = () => {
               Logout
             </button>
           </div>
-          <Map />
+          <MapComponent/>
 
           <div className="mt-14">
             <h2 className="text-xl font-bold">Incoming Requests</h2>

@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
-import Map from "@/Components/Maps";
+// import Map from "@/Components/Maps";
 import { io } from "socket.io-client";
+import dynamic from "next/dynamic";
+const MapComponent = dynamic(() => import("../../Components/Maps.js"), { ssr: false })
 
 const socket = io("https://wepbackend23.onrender.com", { transports: ["websocket"] });
 
@@ -326,7 +328,7 @@ const CustomerDashboard = () => {
             Logout
           </button>
         </div>
-        <Map />
+        <MapComponent />
 
         {/* ✅ Service Options */}
         <div className="grid grid-cols-2 gap-6 mt-28 w-full max-w-lg">

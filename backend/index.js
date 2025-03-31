@@ -10,6 +10,8 @@ const RequestRouter = require('./routes/RequestRouter');
 const socketConfig = require("./socket"); // Import socket configuration
 const http = require("http"); // ✅ Add this line
 const requests=require("../backend/models/Requests")
+const PORT = process.env.PORT || 4000;
+
 
 dotenv.config();
 
@@ -42,10 +44,9 @@ app.use("/request",RequestRouter)
 app.use("/available",ServiceproviderRoutes)
 app.use("/serviceproviderlocation",ServiceproviderRoutes)
 app.use("/customerlocation",CustomerRoutes)
-// app.use("/otpverify",OtpRoutes)
-// app.use('/request',RequestRouter)
 
 
-server.listen(process.env.PORT, () => {
+
+server.listen(PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
