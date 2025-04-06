@@ -60,7 +60,7 @@ const CustomerDashboard = () => {
     };
 
     verifyToken();
-  }, []); //this useEffect for customer verification
+  }, []); 
 
   useEffect(() => {
     const fetchingAcceptedRequests = async (providerEmail, customerEmail) => {
@@ -72,7 +72,7 @@ const CustomerDashboard = () => {
       });
 
       if (res.status === 200) {
-        return res.data; // Return the fetched data
+        return res.data; 
       } else {
         throw new Error("Failed to fetch accepted requests");
       }
@@ -281,16 +281,26 @@ const CustomerDashboard = () => {
         if (response.status === 200) {
           alert(`Verified service provider: ${provider.Name}`);
           setOtp("")
-          await axios.post("https://wepbackend23.onrender.com/customer/servicerecievedcount",{customerEmail: email1})
-          .then((response)=>{
-            if(response.status===200){
+          await axios.post("https://wepbackend23.onrender.com/customer/servicerecievedcount", { customerEmail: email1 })
+            .then((response) => {
+              if (response.status === 200) {
                 console.log(response);
                 setServicesRecievedCount(response.data.servicesRecievedCount);
-            }
-          })
-          .catch((error)=>{
-            console.log("Error incrementing service recieved count",error);
-          });
+
+                const local = JSON.parse(localStorage.getItem("serviceProviderDetails"));
+                console.log("yyyyyyyyyyyyyyyyyyyy",local)
+                const updatedRequests = local.filter(
+                  (provider) => provider.email !== provider.email
+                );
+                setRequests(updatedRequests);
+
+                // Update local storage
+                localStorage.setItem("serviceProviderDetails", JSON.stringify(updatedRequests));
+              }
+            })
+            .catch((error) => {
+              console.log("Error incrementing service recieved count", error);
+            });
         } else {
           alert("Enter valid OTP");
         }
@@ -300,6 +310,7 @@ const CustomerDashboard = () => {
         alert("Enter valid otp");
       });
   };
+
   useEffect(() => {
     socket.on("requestCanceledbyprovider", (data) => {
       alert(`Request canceled of the service provider: ${data.providerEmail}`);
