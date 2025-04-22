@@ -295,6 +295,8 @@ const CustomerDashboard = () => {
       .then(async (response) => {
         if (response.status === 200) {
           alert(`Verified service provider: ${provider.Name}`);
+          socket.emit("serviceAccepted", {
+            serviceProviderEmail: provider.email,});
           setOtp("")
           await axios.post("https://wepbackend23.onrender.com/customer/servicerecievedcount", { customerEmail: email1 })
             .then((response) => {
@@ -303,13 +305,13 @@ const CustomerDashboard = () => {
                 setServicesRecievedCount(response.data.servicesRecievedCount);
 
                 const local = JSON.parse(localStorage.getItem("serviceProviderDetails"));
-                console.log("yyyyyyyyyyyyyyyyyyyy",local)
+                // console.log("yyyyyyyyyyyyyyyyyyyy",local)
                 const updatedRequests = local.filter(
                   (provider) => provider.email !== provider.email
                 );
                 setRequests(updatedRequests);
 
-                // Update local storage
+               
                 localStorage.setItem("serviceProviderDetails", JSON.stringify(updatedRequests));
               }
             })

@@ -6,9 +6,13 @@ import axios from "axios";
 import { io } from "socket.io-client"; // Import socket.io client
 // import Map from "../../Components/Maps";
 import dynamic from "next/dynamic";
-const MapComponent = dynamic(() => import("../../Components/Maps.js"), { ssr: false })
+const MapComponent = dynamic(() => import("../../Components/Maps.js"), {
+  ssr: false,
+});
 
-const socket = io("https://wepbackend23.onrender.com", { transports: ["websocket"] });
+const socket = io("https://wepbackend23.onrender.com", {
+  transports: ["websocket"],
+});
 
 const ServiceProviderDashboard = () => {
   const router = useRouter();
@@ -20,11 +24,12 @@ const ServiceProviderDashboard = () => {
     lng: null,
   });
   const [serviceType, setServiceType] = useState("");
-  const [servicesProvidedCount,setServicesProvidedCount] = useState(0);
-  const [servicesRejectedCount,setServicesRejectedCount] = useState(0);
+  const [servicesProvidedCount, setServicesProvidedCount] = useState(0);
+  const [servicesRejectedCount, setServicesRejectedCount] = useState(0);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const[customerEmail,setCustomerEmail] = useState({});
+  const [customerEmail, setCustomerEmail] = useState({});
+  const [verifiedstatus, setVerifiedStatus] = useState(false);
 
   useEffect(() => {
     const spt = Cookies.get("spt");
@@ -55,7 +60,7 @@ const ServiceProviderDashboard = () => {
             serviceType: response.data.serviceprovider.serviceType, // This comes from your sign-in page
           };
 
-          // Register provider with socket
+         
           socket.emit("registerServiceProvider", providerData);
         }
       } catch (err) {
@@ -80,54 +85,53 @@ const ServiceProviderDashboard = () => {
 
   useEffect(() => {
     function getCurrentLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    console.log(" iam printing ", latitude, longitude);
-                    setLocation({ lat: latitude, lng: longitude });
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            console.log(" iam printing ", latitude, longitude);
+            setLocation({ lat: latitude, lng: longitude });
 
-                    updateLocation(latitude, longitude);
-                },
-                (error) => {
-                    alert("Error getting location");
-                    console.error("Geolocation error:", error);
-                },
-                { enableHighAccuracy: true, maximumAge: 0 }
-            );
-        } else {
-            console.log("Geolocation is not supported by this browser.");
-        }
+            updateLocation(latitude, longitude);
+          },
+          (error) => {
+            alert("Error getting location");
+            console.error("Geolocation error:", error);
+          },
+          { enableHighAccuracy: true, maximumAge: 0 }
+        );
+      } else {
+        console.log("Geolocation is not supported by this browser.");
+      }
     }
 
     async function updateLocation(latitude, longitude) {
-        if (!email1) return;
-        try {
-            await axios.post(
-                "https://wepbackend23.onrender.com/serviceproviderlocation/update-location",
-                {
-                    latitude,
-                    longitude,
-                    email: email1,
-                }
-            );
-            console.log("Location updated successfully!");
-        } catch (error) {
-            console.error("Error updating location:", error);
-        }
+      if (!email1) return;
+      try {
+        await axios.post(
+          "https://wepbackend23.onrender.com/serviceproviderlocation/update-location",
+          {
+            latitude,
+            longitude,
+            email: email1,
+          }
+        );
+        console.log("Location updated successfully!");
+      } catch (error) {
+        console.error("Error updating location:", error);
+      }
     }
 
     getCurrentLocation();
 
     const interval = setInterval(() => {
-        socket.emit("providercurrentlocation", { location, customerEmail });
-        
-        console.log("Location sent to customer",location, customerEmail);
-    }, 10000); 
+      socket.emit("providercurrentlocation", { location, customerEmail });
 
-    return () => clearInterval(interval); 
-},
-[email1, location, customerEmail]);
+      console.log("Location sent to customer", location, customerEmail);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [email1, location, customerEmail]);
 
   console.log("customerLocation", customerLocation);
   console.log("servicelocation", location);
@@ -158,25 +162,27 @@ const ServiceProviderDashboard = () => {
     console.log("customerLocation=================", customerLocationData);
 
     if (customerLocationData) {
-        try {
-            const parsedData = JSON.parse(customerLocationData);
-            if (Array.isArray(parsedData) && parsedData.length > 0) {
-                const latestCustomer = parsedData[parsedData.length - 1]; // Fetch the latest customer data
-                console.log("Parsed customerLocation:", latestCustomer.customerlocation);
-                console.log("Parsed customerMail:",latestCustomer.customerId);
-                setcustomerLocation(latestCustomer.customerlocation);
-                setCustomerEmail(latestCustomer.customerId); // Store customer email
-            } else {
-                console.log("No valid customer location data found.");
-            }
-        } catch (error) {
-            console.error("Error parsing customer location data:", error);
+      try {
+        const parsedData = JSON.parse(customerLocationData);
+        if (Array.isArray(parsedData) && parsedData.length > 0) {
+          const latestCustomer = parsedData[parsedData.length - 1]; // Fetch the latest customer data
+          console.log(
+            "Parsed customerLocation:",
+            latestCustomer.customerlocation
+          );
+          console.log("Parsed customerMail:", latestCustomer.customerId);
+          setcustomerLocation(latestCustomer.customerlocation);
+          setCustomerEmail(latestCustomer.customerId); // Store customer email
+        } else {
+          console.log("No valid customer location data found.");
         }
+      } catch (error) {
+        console.error("Error parsing customer location data:", error);
+      }
     } else {
-        console.log("No customer location found in localStorage.");
+      console.log("No customer location found in localStorage.");
     }
-}, []);
-  
+  }, []);
 
   const handleAccept = (
     requestId,
@@ -221,7 +227,10 @@ const ServiceProviderDashboard = () => {
           .then((response) => {
             // alert(response.data.message);
             axios
-              .post("https://wepbackend23.onrender.com/request/requestupdate", data)
+              .post(
+                "https://wepbackend23.onrender.com/request/requestupdate",
+                data
+              )
               .then((response) => {
                 console.log(response);
 
@@ -284,6 +293,11 @@ const ServiceProviderDashboard = () => {
       console.error("customerlocation is not a valid string");
     }
   };
+  socket.on("serviceAcceptednotification", (data) => {
+    console.log("Service Verified" );
+    setVerifiedStatus(true);
+    
+  });
 
   const handleReject = (requestId) => {
     // Emit cancelRequest event to the server
@@ -317,15 +331,21 @@ const ServiceProviderDashboard = () => {
             "serviceAccepted",
             JSON.stringify(filteredRequests)
           );
-          await axios.post("https://wepbackend23.onrender.com/serviceprovider/servicesrejectedcount", { providerEmail: email1 })
+          await axios
+            .post(
+              "https://wepbackend23.onrender.com/serviceprovider/servicesrejectedcount",
+              { providerEmail: email1 }
+            )
             .then((response) => {
               console.log(response);
               setServicesRejectedCount(response.data.servicesRejectedCount);
             })
             .catch((error) => {
-              console.log("Error at incrementing service rejected count for provider", error);
-            })
-
+              console.log(
+                "Error at incrementing service rejected count for provider",
+                error
+              );
+            });
         }
       })
       .catch((error) => {
@@ -347,7 +367,6 @@ const ServiceProviderDashboard = () => {
       setRequests(updatedRequests);
       localStorage.setItem("serviceAccepted", JSON.stringify(updatedRequests));
       localStorage.setItem("available", "true");
-
     });
 
     return () => {
@@ -356,7 +375,11 @@ const ServiceProviderDashboard = () => {
   }, [requests]);
 
   const handleComplete = async (requestId) => {
-    await axios.post("https://wepbackend23.onrender.com/serviceprovider/servicesprovidedcount", { providerEmail: email1 })
+    await axios
+      .post(
+        "https://wepbackend23.onrender.com/serviceprovider/servicesprovidedcount",
+        { providerEmail: email1 }
+      )
       .then((response) => {
         console.log(response);
         setServicesProvidedCount(response.data.servicesProvidedCount);
@@ -374,9 +397,12 @@ const ServiceProviderDashboard = () => {
         );
       })
       .catch((error) => {
-        console.log("Error at incrementing service provided count for provider", error);
-      })
-  }
+        console.log(
+          "Error at incrementing service provided count for provider",
+          error
+        );
+      });
+  };
 
   return (
     <div className="text-2xl text-white p-6">
@@ -385,7 +411,8 @@ const ServiceProviderDashboard = () => {
       ) : (
         <>
           <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
-            Welcome, {name}, {serviceType},serveice Done {servicesProvidedCount} times, Rejected {servicesRejectedCount} times
+            Welcome, {name}, {serviceType},serveice Done {servicesProvidedCount}{" "}
+            times, Rejected {servicesRejectedCount} times
             <button
               onClick={handleLogout}
               className="bg-red-500 px-3 py-1 rounded hover:bg-red-700 transition cursor-pointer"
@@ -393,7 +420,10 @@ const ServiceProviderDashboard = () => {
               Logout
             </button>
           </div>
-          <MapComponent customerLocation={customerLocation} providerLocation={location}/>
+          <MapComponent
+            customerLocation={customerLocation}
+            providerLocation={location}
+          />
 
           <div className="mt-14">
             <h2 className="text-xl font-bold">Incoming Requests</h2>
@@ -432,21 +462,23 @@ const ServiceProviderDashboard = () => {
                       >
                         Accept
                       </button>
-                      
                     </div>
                   ) : (
                     <div className="mt-2">
                       <button
-                        onClick={() =>
-                          handleComplete(req.customerId,email1)
-                        }
-                        className="bg-green-500 px-3 py-1 rounded text-white mx-2"
+                        disabled={!verifiedstatus}
+                        onClick={() => handleComplete(req.customerId, email1)}
+                        className={`px-3 py-1 rounded text-white mx-2  ${
+                          verifiedstatus
+                            ? "bg-green-500 cursor-pointer"
+                            : "bg-green-300 cursor-not-allowed"
+                        }`}
                       >
-                        complete
+                        Complete
                       </button>
                       <button
                         onClick={() => handleReject(req.customerId, email1)}
-                        className="bg-red-500 px-3 py-1 rounded text-white"
+                        className="bg-red-500 px-3 py-1 rounded text-white cursor-pointer"
                       >
                         Cancel
                       </button>
