@@ -6,6 +6,7 @@ import axios from "axios";
 // import Map from "@/Components/Maps";
 import { io } from "socket.io-client";
 import dynamic from "next/dynamic";
+import { set } from "react-hook-form";
 const MapComponent = dynamic(() => import("../../Components/Maps.js"), { ssr: false })
 
 const socket = io("https://wepbackend23.onrender.com", { transports: ["websocket"] });
@@ -21,6 +22,7 @@ const CustomerDashboard = () => {
   const[otp,setOtp]=useState();
   const [servicesRecievedCount, setServicesRecievedCount] = useState(0);
   const [servicesRejectedCount, setServicesRejectedCount] = useState(0);
+  const [serviceProviderlocation,setserviceProviderLocation]=useState({lat:null,lng:null})
 
   useEffect(() => {
     // Remove "spt" token (if any)
@@ -184,6 +186,18 @@ const CustomerDashboard = () => {
     setRequests(storedRequests);
   }, []);
 
+  useEffect(() => {
+    if (requests.length > 0) {
+      const latestProvider = requests[requests.length - 1];
+      if (latestProvider?.currentLocation?.coordinates) {
+        setserviceProviderLocation({
+          lat: latestProvider.currentLocation.coordinates[1],
+          lng: latestProvider.currentLocation.coordinates[0],
+        });
+      }
+    }
+  }, [requests]);
+
   const handleRequestService = async (serviceType) => {
     if (!location.lat || !location.lng) {
       alert("Location not available. Please allow location access.");
@@ -339,7 +353,7 @@ const CustomerDashboard = () => {
             Logout
           </button>
         </div>
-        <MapComponent />
+        <MapComponent customerLocation={location} providerLocation={serviceProviderlocation} />
 
         {/* ✅ Service Options */}
         <div className="grid grid-cols-2 gap-6 mt-28 w-full max-w-lg">
@@ -380,7 +394,9 @@ const CustomerDashboard = () => {
   <h1 className="text-2xl">Customer Dashboard</h1>
 
   {requests.length > 0 ? (
+
     requests.map((provider, index) => (
+
       <div key={index} className="mt-4 bg-gray-800 p-4 rounded">
         <h2 className="text-xl font-bold">Service Provider Details</h2>
         <p>
@@ -397,8 +413,10 @@ const CustomerDashboard = () => {
           {provider?.currentLocation?.coordinates &&
           provider.currentLocation.coordinates.length === 2
             ? `${provider.currentLocation.coordinates[0]}, ${provider.currentLocation.coordinates[1]}`
+            
             : "Location not available"}
         </p>
+        
         <p>
           <strong>Service Type:</strong> {provider.ServiceType || "N/A"}
         </p>

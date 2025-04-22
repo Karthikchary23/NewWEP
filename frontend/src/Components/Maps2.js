@@ -12,13 +12,14 @@ const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), 
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
 
 const defaultCenter = [17.385044, 78.486671];
+const providerLocation = { lat: 17.390044, lng: 78.491671 }; // Service provider
+const customerLocation = { lat: 17.380044, lng: 78.481671 }; // Customer
 
-const Routing = ({ L, customerLocation, providerLocation, setDistance }) => {
+const Routing = ({ L, setDistance }) => {
     const map = useMap();
-    console.log("Routing component mounted", { customerLocation, providerLocation });
 
     useEffect(() => {
-        if (map && L && L.Routing && customerLocation && providerLocation && customerLocation.lat && customerLocation.lng && providerLocation.lat && providerLocation.lng) {
+        if (map && L && L.Routing) {
             const routingControl = L.Routing.control({
                 waypoints: [
                     L.latLng(customerLocation.lat, customerLocation.lng),
@@ -42,18 +43,19 @@ const Routing = ({ L, customerLocation, providerLocation, setDistance }) => {
                 map.removeControl(routingControl);
             };
         }
-    }, [map, L, customerLocation, providerLocation, setDistance]);
+    }, [map, L, setDistance]);
 
     return null;
 };
 
-const Map = ({ providerLocation, customerLocation }) => {
+const Map = () => {
     const [L, setL] = useState(null);
     const [distance, setDistance] = useState(null);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
             import("leaflet").then((leaflet) => {
+                // Load leaflet-routing-machine after leaflet
                 import("leaflet-routing-machine").then(() => {
                     setL(leaflet.default); // Use leaflet.default for ES module
                 });
@@ -63,21 +65,17 @@ const Map = ({ providerLocation, customerLocation }) => {
 
     if (!L) return <div style={{ textAlign: "center", padding: "20px" }}>Loading map...</div>;
 
-    const center = providerLocation && customerLocation && providerLocation.lat && providerLocation.lng && customerLocation.lat && customerLocation.lng
-        ? [(providerLocation.lat + customerLocation.lat) / 2, (providerLocation.lng + customerLocation.lng) / 2]
-        : defaultCenter;
-
     const providerIcon = new L.Icon({
-        iconUrl: "/service.png", // Corrected path
-        iconRetinaUrl: "/service.png",
+        iconUrl: "https://cdn.pixabay.com/photo/2014/04/02/10/45/location-304467_340.png",
+        iconRetinaUrl: "https://cdn.pixabay.com/photo/2014/04/02/10/45/location-304467_340.png",
         iconSize: [20, 30],
         iconAnchor: [10, 30],
         popupAnchor: [0, -30],
     });
 
     const customerIcon = new L.Icon({
-        iconUrl: "/maps.png", // Corrected path
-        iconRetinaUrl: "/maps.png",
+        iconUrl: "https://cdn.pixabay.com/photo/2018/11/13/21/44/location-3813578_1280.png",
+        iconRetinaUrl: "https://cdn.pixabay.com/photo/2018/11/13/21/44/location-3813578_1280.png",
         iconSize: [20, 30],
         iconAnchor: [10, 30],
         popupAnchor: [0, -30],
@@ -87,7 +85,7 @@ const Map = ({ providerLocation, customerLocation }) => {
         <div style={{ height: "40vh", width: "100vw", display: "flex", justifyContent: "center", alignItems: "center", marginTop: 50 }}>
             <MapContainer
                 style={{ height: "50vh", width: "95vw", borderRadius: "10px" }}
-                center={center}
+                center={defaultCenter}
                 zoom={13}
                 scrollWheelZoom={true}
             >
@@ -95,24 +93,13 @@ const Map = ({ providerLocation, customerLocation }) => {
                     attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {providerLocation && providerLocation.lat && providerLocation.lng && (
-                    <Marker icon={providerIcon} position={[providerLocation.lat, providerLocation.lng]}>
-                        <Popup>Service Provider Location</Popup>
-                    </Marker>
-                )}
-                {customerLocation && customerLocation.lat && customerLocation.lng && (
-                    <Marker icon={customerIcon} position={[customerLocation.lat, customerLocation.lng]}>
-                        <Popup>Customer Location</Popup>
-                    </Marker>
-                )}
-                {providerLocation && customerLocation && providerLocation.lat && providerLocation.lng && customerLocation.lat && customerLocation.lng && (
-                    <Routing
-                        L={L}
-                        customerLocation={customerLocation}
-                        providerLocation={providerLocation}
-                        setDistance={setDistance}
-                    />
-                )}
+                <Marker icon={providerIcon} position={[providerLocation.lat, providerLocation.lng]}>
+                    <Popup>Service Provider Location</Popup>
+                </Marker>
+                <Marker icon={customerIcon} position={[customerLocation.lat, customerLocation.lng]}>
+                    <Popup>Customer Location</Popup>
+                </Marker>
+                <Routing L={L} setDistance={setDistance} />
             </MapContainer>
             {distance && (
                 <div style={{ position: "absolute", bottom: "10px", left: "10px", background: "white", padding: "5px", borderRadius: "5px" }}>

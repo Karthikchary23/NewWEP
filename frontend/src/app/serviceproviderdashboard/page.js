@@ -83,7 +83,7 @@ const ServiceProviderDashboard = () => {
         navigator.geolocation.watchPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
-            console.log(latitude, longitude);
+            console.log(" iam printing ",latitude, longitude);
             setLocation({ lat: latitude, lng: longitude });
 
             updateLocation(latitude, longitude);
@@ -119,6 +119,8 @@ const ServiceProviderDashboard = () => {
 
     getCurrentLocation();
   }, [email1]);
+  console.log("customerLocation", customerLocation);
+  console.log("servicelocation", location);
 
   useEffect(() => {
     socket.on("newServiceRequest", (data) => {
@@ -141,6 +143,28 @@ const ServiceProviderDashboard = () => {
       socket.off("newServiceRequest");
     };
   }, []);
+  useEffect(() => {
+    const customerLocationData = localStorage.getItem("serviceAccepted");
+    console.log("customerLocation=================", customerLocationData);
+
+    if (customerLocationData) {
+        try {
+            const parsedData = JSON.parse(customerLocationData);
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+                const latestCustomer = parsedData[parsedData.length - 1]; // Fetch the latest customer data
+                console.log("Parsed customerLocation:", latestCustomer.customerlocation);
+                setcustomerLocation(latestCustomer.customerlocation);
+            } else {
+                console.log("No valid customer location data found.");
+            }
+        } catch (error) {
+            console.error("Error parsing customer location data:", error);
+        }
+    } else {
+        console.log("No customer location found in localStorage.");
+    }
+}, []);
+  
 
   const handleAccept = (
     requestId,
@@ -357,7 +381,7 @@ const ServiceProviderDashboard = () => {
               Logout
             </button>
           </div>
-          <MapComponent/>
+          <MapComponent customerLocation={customerLocation} providerLocation={location}/>
 
           <div className="mt-14">
             <h2 className="text-xl font-bold">Incoming Requests</h2>
