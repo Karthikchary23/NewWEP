@@ -329,7 +329,7 @@ const CustomerDashboard = () => {
     console.log("Provider location update:", data);
     const { lat, lng } = data;
     console.log("Updated provider location:", lat, lng);
-    alert("Provider location updated!");
+    // alert("Provider location updated!");
     setserviceProviderLocation({ lat, lng });
   })
 
