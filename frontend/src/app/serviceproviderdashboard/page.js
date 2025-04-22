@@ -24,6 +24,7 @@ const ServiceProviderDashboard = () => {
   const [servicesRejectedCount,setServicesRejectedCount] = useState(0);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const[customerEmail,setCustomerEmail] = useState({});
 
   useEffect(() => {
     const spt = Cookies.get("spt");
@@ -79,46 +80,55 @@ const ServiceProviderDashboard = () => {
 
   useEffect(() => {
     function getCurrentLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            console.log(" iam printing ",latitude, longitude);
-            setLocation({ lat: latitude, lng: longitude });
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    console.log(" iam printing ", latitude, longitude);
+                    setLocation({ lat: latitude, lng: longitude });
 
-            updateLocation(latitude, longitude);
-            // alert(location)
-          },
-          (error) => {
-            alert("Error getting location");
-            console.error("Geolocation error:", error);
-          },
-          { enableHighAccuracy: true, maximumAge: 0 }
-        );
-      } else {
-        console.log("Geolocation is not supported by this browser.");
-      }
+                    updateLocation(latitude, longitude);
+                },
+                (error) => {
+                    alert("Error getting location");
+                    console.error("Geolocation error:", error);
+                },
+                { enableHighAccuracy: true, maximumAge: 0 }
+            );
+        } else {
+            console.log("Geolocation is not supported by this browser.");
+        }
     }
 
     async function updateLocation(latitude, longitude) {
-      if (!email1) return;
-      try {
-        await axios.post(
-          "https://wepbackend23.onrender.com/serviceproviderlocation/update-location",
-          {
-            latitude,
-            longitude,
-            email: email1,
-          }
-        );
-        console.log("Location updated successfully!");
-      } catch (error) {
-        console.error("Error updating location:", error);
-      }
+        if (!email1) return;
+        try {
+            await axios.post(
+                "https://wepbackend23.onrender.com/serviceproviderlocation/update-location",
+                {
+                    latitude,
+                    longitude,
+                    email: email1,
+                }
+            );
+            console.log("Location updated successfully!");
+        } catch (error) {
+            console.error("Error updating location:", error);
+        }
     }
 
     getCurrentLocation();
-  }, [email1]);
+
+    const interval = setInterval(() => {
+        socket.emit("providercurrentlocation", { location, customerEmail });
+        
+        console.log("Location sent to customer",location, customerEmail);
+    }, 10000); 
+
+    return () => clearInterval(interval); 
+},
+[email1, location, customerEmail]);
+
   console.log("customerLocation", customerLocation);
   console.log("servicelocation", location);
 
@@ -153,7 +163,9 @@ const ServiceProviderDashboard = () => {
             if (Array.isArray(parsedData) && parsedData.length > 0) {
                 const latestCustomer = parsedData[parsedData.length - 1]; // Fetch the latest customer data
                 console.log("Parsed customerLocation:", latestCustomer.customerlocation);
+                console.log("Parsed customerMail:",latestCustomer.customerId);
                 setcustomerLocation(latestCustomer.customerlocation);
+                setCustomerEmail(latestCustomer.customerId); // Store customer email
             } else {
                 console.log("No valid customer location data found.");
             }
@@ -373,7 +385,7 @@ const ServiceProviderDashboard = () => {
       ) : (
         <>
           <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
-            Welcome, {name}, {serviceType}
+            Welcome, {name}, {serviceType},serveice Done {servicesProvidedCount} times, Rejected {servicesRejectedCount} times
             <button
               onClick={handleLogout}
               className="bg-red-500 px-3 py-1 rounded hover:bg-red-700 transition cursor-pointer"

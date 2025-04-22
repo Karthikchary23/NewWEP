@@ -159,7 +159,7 @@ const CustomerDashboard = () => {
             email: email1,
           }
         );
-        // alert("location success")
+       
 
         console.log("Location updated successfully!");
       } catch (error) {
@@ -169,8 +169,9 @@ const CustomerDashboard = () => {
     }
 
     getCurrentLocation();
-    // alert("email not found",email1)
+
   }, [email1]);
+
 
   useEffect(() => {
     // Fetch service provider details from local storage on page load
@@ -324,6 +325,13 @@ const CustomerDashboard = () => {
         alert("Enter valid otp");
       });
   };
+  socket.on("providerLocationUpdate", (data) => {
+    console.log("Provider location update:", data);
+    const { lat, lng } = data;
+    console.log("Updated provider location:", lat, lng);
+    alert("Provider location updated!");
+    setserviceProviderLocation({ lat, lng });
+  })
 
   useEffect(() => {
     socket.on("requestCanceledbyprovider", (data) => {
@@ -344,7 +352,7 @@ const CustomerDashboard = () => {
     <>
       <div className="flex flex-col items-center w-full px-4 mt-4">
         <div className="flex flex-row justify-between items-center text-2xl text-white w-full px-4">
-          <div>Welcome to Customer Dashboard, {name} </div>
+          <div>Welcome to Customer Dashboard, {name} service received {servicesRecievedCount}, service Rejected {servicesRejectedCount}</div>
 
           <button
             onClick={handleLogout}
