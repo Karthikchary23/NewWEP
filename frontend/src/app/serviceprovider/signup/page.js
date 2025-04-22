@@ -178,10 +178,10 @@ export default function ServiceProviderSignup() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select service type</option>
-              <option value="plumber">Plumbing</option>
-              <option value="electrician">Electrician</option>
-              <option value="cleaning">Cleaning</option>
-              <option value="repair">Repair</option>
+              <option value="Plumber">Plumbing</option>
+              <option value="Plectrician">Electrician</option>
+              <option value="Cleaning">Cleaning</option>
+              <option value="Cook">Cook</option>
             </select>
             {errors.serviceType && (
               <p className="text-red-500 text-xs">{errors.serviceType.message}</p>
